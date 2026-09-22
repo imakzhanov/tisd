@@ -51,7 +51,7 @@ int parse_real(char buf[], real_num *num)
         if (buf[pos] == '.') 
         {
             if (has_dot) 
-                return -1; 
+                return INCORRECT_INPUT; 
             has_dot = 1;
             dot_position = total_digits;
         } 
@@ -87,6 +87,7 @@ int parse_real(char buf[], real_num *num)
     // обработка числа 0
     if (first_not_zero == total_digits) 
     {
+        num->mantissa_sign = 1;
         num->mantissa_len = 1;
         num->mantissa[0] = 0;
         num->order = 0;
@@ -226,6 +227,7 @@ int parse_integer(char buf[], integer_num *num)
     // обработка числа 0
     if (first_not_zero == total_digits) 
     {
+        num->sign = 1;
         num->mantissa_len = 1;
         num->mantissa[0] = 0;
         
@@ -275,7 +277,10 @@ void print_real(real_num number)
     {
         printf("%d", number.mantissa[i]);
     }   
-    printf(" E %d\n", number.order);
+    if (number.order >= 0)
+        printf(" E +%d\n", number.order);
+    else
+        printf(" E -%d\n", -number.order);
 }
 
 void print_error(int rc)

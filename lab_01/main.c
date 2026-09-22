@@ -37,7 +37,11 @@ int main(void)
 
     printf("Введите делимое в формате ±m.n Е ±K, мантисса до 35 цифр, порядок до 5 цифр:\n");
     printf("<---5----10---15---20---25---30---35---40--->\n");
-    fgets(buf, sizeof(buf), stdin);
+    if (fgets(buf, sizeof(buf), stdin) == NULL)
+    {
+        print_error(INCORRECT_INPUT);
+        return INCORRECT_INPUT;
+    }
 
     rc = parse_real(buf, &dividend);
     if (rc)
@@ -48,7 +52,11 @@ int main(void)
        
     printf("Введите делитель, целое число, не более 35 цифр:\n");    
     printf("<---5----10---15---20---25---30---35---40--->\n");
-    fgets(buf, sizeof(buf), stdin);
+    if (fgets(buf, sizeof(buf), stdin) == NULL)
+    {
+        print_error(INCORRECT_INPUT);
+        return INCORRECT_INPUT;
+    }
 
     rc = parse_integer(buf, &divider);
     if (rc)
