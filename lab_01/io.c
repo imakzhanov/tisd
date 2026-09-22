@@ -41,7 +41,7 @@ int parse_real(char buf[], real_num *num)
     int digits[MAX_BUFFER_LEN]; 
     int total_digits = 0;
 
-    int dot_position = -1; // Позиция точки
+    int dot_position = -1;
     int has_digits = 0;
     int has_dot = 0;
 
@@ -192,7 +192,7 @@ int parse_integer(char buf[], integer_num *num)
     int has_digits = 0;
 
     
-    while (buf[pos] != '\0' && buf[pos] != '\n' && buf[pos] != ' ') 
+    while (buf[pos] != '\0' && buf[pos] != '\n' && buf[pos] != ' ' && buf[pos] != 'E' && buf[pos] != 'e' && buf[pos] != '.') 
     {
         if (my_isdigit(buf[pos])) 
         {
@@ -201,14 +201,22 @@ int parse_integer(char buf[], integer_num *num)
             {
                 digits[total_digits++] = buf[pos] - '0';
             }
+            pos++;
         }
         else 
             return INCORRECT_SYMBOL;
-        pos++;
     }
 
     if (!has_digits) 
         return INCORRECT_INPUT;
+
+    skip_spaces(buf, &pos);
+
+    if (buf[pos] == '.')
+        return CANT_INPUT_REAL_NUMBER;
+
+    if (buf[pos] == 'E' || buf[pos] == 'e')
+        return CANT_INPUT_EXP_FORM;
 
     // Удаление ведущих нулей
     int first_not_zero = 0;
@@ -266,7 +274,7 @@ void print_real(real_num number)
     for (int i = 0; i < number.mantissa_len; i++)
     {
         printf("%d", number.mantissa[i]);
-    }    
+    }   
     printf(" E %d\n", number.order);
 }
 
@@ -292,6 +300,12 @@ void print_error(int rc)
         break;
     case DIVISION_BY_ZERO:
         printf("Деление на ноль\n");
+        break;
+    case CANT_INPUT_EXP_FORM:
+        printf("Число не может быть введено в экспоненциальной форме\n");
+        break;
+    case CANT_INPUT_REAL_NUMBER:
+        printf("Вы пытаетесь ввести не целое число\n");
         break;
     default:
         printf("Неизвестная ошибка\n");

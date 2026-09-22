@@ -13,4 +13,7 @@
 
 #define DIVISION_BY_ZERO 6
 
+#define CANT_INPUT_EXP_FORM 7
+#define CANT_INPUT_REAL_NUMBER 8
+
 #endif
