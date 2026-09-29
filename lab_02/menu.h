@@ -3,6 +3,6 @@
 
 #include "struct_func.h"
 
-void run_menu_loop(Table *t);
+void run_menu(Table *t, KeyTable *key_table, int *is_key_actual, char *output_filename);
 
 #endif

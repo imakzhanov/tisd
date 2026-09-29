@@ -67,40 +67,53 @@ void table_free(Table *t)
     t->data = NULL;
     t->count = 0;
 }
-
-void flat_print_header(void)
+void print_flat_header(void)
 {
-    printf("%-30s %8s %6s %10s %-10s %s\n",
-           "Адрес", "Площадь", "Комн.", "Цена/м2", "Тип", "Доп. поля");
+    printf("%-20s %8s %6s %10s %10s %10s %11s %7s %9s\n",
+           "Address", "Area", "Rooms", "Price/m2", "Type",
+           "Finishing", "Build year", "Owners", "Had pets");
 }
 
-void flat_print(Flat *f)
+void print_flat(Flat *f)
 {
-    printf("%-30s %8.2f %6d %10.2f ", f->address, f->area, f->rooms, f->price_m2);
+    char finishing[8] = "-";
+    char build_year[16] = "-";
+    char owners[16] = "-";
+    char had_pets[8] = "-";
+    const char *type_str;
+
     if (f->type == PRIMARY)
     {
-        printf("%-10s отделка=%s\n", "первичное",
-               f->variable.primary.has_finishing ? "да" : "нет");
+        type_str = "primary";
+        snprintf(finishing, sizeof(finishing), "%s",
+                 f->variable.primary.has_finishing ? "yes" : "no");
     }
     else
     {
-        printf("%-10s год=%d, собств.=%d, животные=%s\n", "вторичное",
-               f->variable.secondary.build_year,
-               f->variable.secondary.owners,
-               f->variable.secondary.had_pets ? "да" : "нет");
+        type_str = "secondary";
+        snprintf(build_year, sizeof(build_year), "%d",
+                  f->variable.secondary.build_year);
+        snprintf(owners, sizeof(owners), "%d",
+                  f->variable.secondary.owners);
+        snprintf(had_pets, sizeof(had_pets), "%s",
+                  f->variable.secondary.had_pets ? "yes" : "no");
     }
+
+    printf("%-20s %8.2f %6d %10.2f %10s %10s %11s %7s %9s\n",
+           f->address, f->area, f->rooms, f->price_m2, type_str,
+           finishing, build_year, owners, had_pets);
 }
 
-void table_print(Table *table)
+void print_table(Table *table)
 {
     if (table->count == 0)
     {
         printf("Таблица пуста.\n");
         return;
     }
-    flat_print_header();
+    print_flat_header();
     for (int i = 0; i < table->count; i++)
-        flat_print(&table->data[i]);
+        print_flat(&table->data[i]);
 }
 
 int build_key_table(Table *table, KeyTable *key_table)
@@ -125,18 +138,30 @@ void key_table_free(KeyTable *key_table)
     key_table->count = 0;
 }
 
-void key_table_print(KeyTable *key_table, Table *table)
+void print_table_by_key(KeyTable *key_table, Table *table)
 {
     if (key_table->count == 0)
     {
         printf("Таблица ключей пуста.\n");
         return;
     }
-    printf("%-6s %-8s ", "№п/п", "Индекс");
-    flat_print_header();
+    printf("%-6s %-8s ", "Number", "Table Index");
+    print_flat_header();
     for (int i = 0; i < key_table->count; i++)
     {
         printf("%-6d %-8d ", i + 1, key_table->items[i].index);
-        flat_print(&table->data[key_table->items[i].index]);
+        print_flat(&table->data[key_table->items[i].index]);
     }
+}
+
+void print_key_table(KeyTable *key_table)
+{
+    if (key_table->count == 0)
+    {
+        printf("Таблица ключей пуста.\n");
+        return;
+    }
+    printf("%-10s %-10s %s\n", "Number", "Index", "Key (price per m2)");
+    for (int i = 0; i < key_table->count; i++)
+        printf("%-10d %-10d %.2f\n", i + 1, key_table->items[i].index, key_table->items[i].key);
 }

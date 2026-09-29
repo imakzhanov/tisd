@@ -55,12 +55,13 @@ int flat_matches_field(Flat *f, FieldId field, void *value);
 int table_remove_by_field(Table *t, FieldId field, void *value, int *out_removed);
 void table_free(Table *t);
 
-void flat_print_header(void);
-void flat_print(Flat *f);
-void table_print(Table *table);
+void print_flat_header(void);
+void print_flat(Flat *f);
+void print_table(Table *table);
 
 int build_key_table(Table *table, KeyTable *key_table);
 void key_table_free(KeyTable *key_table);
-void key_table_print(KeyTable *key_table, Table *table);
+void print_table_by_key(KeyTable *key_table, Table *table);
+void print_key_table(KeyTable *key_table);
 
 #endif

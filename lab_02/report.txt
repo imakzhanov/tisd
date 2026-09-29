@@ -1,0 +1,7 @@
+Records: 1000
+
+Method               Time, microsec    Memory, B    Time, %
+Bubble (table)               3044        96000      100.0
+Bubble (keys)                1860        16000       61.1
+Quick (table)                  68        96000        2.3
+Quick (keys)                   35        16000        1.1

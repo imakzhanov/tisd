@@ -12,4 +12,6 @@
 
 #define ERR_READ 9 
 
+#define INCORRECT_ARGS 10
+
 #endif

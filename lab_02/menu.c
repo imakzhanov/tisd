@@ -47,7 +47,7 @@ int input_int_with_range(char *text, int min, int max)
     }
 }
 
-double input_double_range(char *text, double min, double max)
+double input_double_with_range(char *text, double min, double max)
 {
     char line[128];
     while (1)
@@ -79,7 +79,7 @@ void input_string(char *text, char *buf, int maxlen)
 {
     while (1)
     {
-        printf("%s (до %в символов, без ';'): ", text, maxlen - 1);
+        printf("%s (до %d символов, без ';'): ", text, maxlen - 1);
         read_line(buf, maxlen);
         if (buf[0] == '\0')
         {
@@ -99,9 +99,9 @@ void input_flat(Flat *f)
 {
     memset(f, 0, sizeof(Flat));
     input_string("Адрес", f->address, MAX_ADDRESS_LEN);
-    f->area = input_double_range("Площадь, м2", 1.0, 10000.0);
+    f->area = input_double_with_range("Площадь, м2", 1.0, 10000.0);
     f->rooms = input_int_with_range("Количество комнат", 1, 10);
-    f->price_m2 = input_double_range("Стоимость за 1 м2", 1.0, 10000000.0);
+    f->price_m2 = input_double_with_range("Стоимость за 1 м2", 1.0, 10000000.0);
 
     int type_choice = input_int_with_range("Тип жилья (0 - первичное, 1 - вторичное)", 0, 1);
     if (type_choice == 0)
@@ -122,17 +122,20 @@ void input_flat(Flat *f)
     }
 }
 
-void menu_add(Table *table)
+void menu_table_add(Table *table, int *is_key_actual)
 {
     Flat f;
     input_flat(&f);
     if (table_add(table, f) == OK)
+    {
         printf("Запись добавлена в конец таблицы.\n");
+        *is_key_actual = 0;
+    }
     else
-        printf("Ошибка выделения памяти, запись не добавлена.\n");
+        printf("Ошибка выделения памяти\n");
 }
 
-void menu_remove(Table *table)
+void menu_table_remove(Table *table, int *is_key_actual)
 {
     printf("Удаление записи по значению поля.\n");
     printf("1 - Адрес\n2 - Площадь\n3 - Количество комнат\n4 - Цена за м2\n");
@@ -151,7 +154,7 @@ void menu_remove(Table *table)
         }
         case 2:
         {
-            double area = input_double_range("Площадь для удаления", 0.0, 100000.0);
+            double area = input_double_with_range("Площадь для удаления", 0.0, 100000.0);
             rc = table_remove_by_field(table, AREA_FIELD, &area, &removed);
             break;
         }
@@ -163,33 +166,34 @@ void menu_remove(Table *table)
         }
         case 4:
         {
-            double price = input_double_range("Цена за м2 для удаления", 0.0, 100000000.0);
+            double price = input_double_with_range("Цена за м2 для удаления", 0.0, 100000000.0);
             rc = table_remove_by_field(table, PRICE_M2_FIELD, &price, &removed);
             break;
         }
     }
 
     if (rc == OK)
+    {
         printf("Удалено записей: %d.\n", removed);
+        *is_key_actual = 0;
+    }
     else
         printf("Записи с таким значением поля не найдены.\n");
 }
 
 
-void menu_view_key_table(Table *table)
+void menu_print_table_by_key(Table *table, KeyTable *key_table, int *is_key_actual)
 {
-    KeyTable key_table;
-    if (build_key_table(table, &key_table) != OK)
+    if (!*is_key_actual)
     {
-        printf("Ошибка выделения памяти под таблицу ключей.\n");
+        printf("Таблица ключей неактуальна, пересоздайте её.\n");
         return;
     }
-    printf("Таблица ключей (в порядке исходной таблицы, ключ = цена за м2):\n");
-    key_table_print(&key_table, table);
-    key_table_free(&key_table);
+    printf("Таблица по порядку ключей:\n");
+    print_table_by_key(key_table, table);
 }
 
-void menu_sort_table(Table *table)
+void menu_sort_table(Table *table, int *is_key_actual)
 {
     int algorithm = input_int_with_range("Алгоритм (1 - сортировка пузырьком, 2 - быстрая сортировка)", 1, 2);
     if (algorithm == 1)
@@ -197,27 +201,25 @@ void menu_sort_table(Table *table)
     else
         sort_quick_table(table);
     printf("Таблица отсортирована по цене за м2.\n");
+    *is_key_actual = 0;
 }
 
-void menu_sort_keys(Table *table)
+void menu_sort_keys(KeyTable *key_table, int *is_key_actual)
 {
-    int algorithm = input_int_with_range("Алгоритм (1 - сортировка пузырьком, 2 - быстрая сортировка)", 1, 2);
-    KeyTable key_table;
-    if (build_key_table(table, &key_table) != OK)
+    if (!*is_key_actual)
     {
-        printf("Ошибка выделения памяти под таблицу ключей.\n");
+        printf("Таблица ключей неактуальна, пересоздайте её.\n");
         return;
     }
+    int algorithm = input_int_with_range("Алгоритм (1 - сортировка пузырьком, 2 - быстрая сортировка)", 1, 2);
     if (algorithm == 1)
-        sort_bubble_keys(&key_table);
+        sort_bubble_keys(key_table);
     else
-        sort_quick_keys(&key_table);
-    printf("Таблица ключей отсортирована (основная таблица не изменена):\n");
-    key_table_print(&key_table, table);
-    key_table_free(&key_table);
+        sort_quick_keys(key_table);
+    printf("Таблица ключей отсортирована:\n");
 }
 
-void menu_search_variant(Table *table)
+void menu_search_variable(Table *table)
 {
     int type_choice = input_int_with_range("Тип (0 - первичное, 1 - вторичное)", 0, 1);
     Table out;
@@ -256,7 +258,7 @@ void menu_search_variant(Table *table)
     if (rc == OK)
     {
         printf("Найдено записей: %d\n", out.count);
-        table_print(&out);
+        print_table(&out);
     }
     else
         printf("Записи не найдены.\n");
@@ -266,8 +268,8 @@ void menu_search_variant(Table *table)
 void menu_search_by_task(Table *table)
 {
     printf("Поиск: вторичная, 2-комнатная, без животных, в диапазоне цен за м2.\n");
-    double min_price = input_double_range("Минимальная цена за м2", 0.0, 100000000.0);
-    double max_price = input_double_range("Максимальная цена за м2", min_price, 100000000.0);
+    double min_price = input_double_with_range("Минимальная цена за м2", 0.0, 100000000.0);
+    double max_price = input_double_with_range("Максимальная цена за м2", min_price, 100000000.0);
 
     Table out;
     table_init(&out);
@@ -276,7 +278,7 @@ void menu_search_by_task(Table *table)
     if (rc == OK)
     {
         printf("Найдено записей: %d\n", out.count);
-        table_print(&out);
+        print_table(&out);
     }
     else
         printf("Записи не найдены.\n");
@@ -285,63 +287,82 @@ void menu_search_by_task(Table *table)
 
 void menu_benchmark(Table *table)
 {
-    int rc = print_bench_report(table);
-    if (rc == ERR_EMPTY_TABLE)
-    {
-        printf("Таблица пуста, замер невозможен.\n");
-        return;
-    }
-    if (rc != OK)
-    {
-        printf("Ошибка при замере эффективности.\n");
-        return;
-    }
-    if (save_bench_report("report.txt", table) == OK)
+    int rc = make_report("report.txt", table);
+    if (rc == OK)
         printf("Отчёт сохранён в report.txt\n");
+    else if (rc == ERR_EMPTY_TABLE)
+        printf("Таблица пуста, замер невозможен.\n");
     else
-        printf("Не удалось сохранить report.txt\n");
+        printf("Не удалось построить отчёт\n");
 }
 
 void print_main_menu(void)
 {
     printf("\n======== МЕНЮ ========\n");
     printf("1 - Просмотреть основную таблицу\n");
-    printf("2 - Просмотреть таблицу ключей (несортированная основная таблица)\n");
-    printf("3 - Добавить запись\n");
-    printf("4 - Удалить запись по значению поля\n");
-    printf("5 - Отсортировать основную таблицу (вариант а)\n");
-    printf("6 - Отсортировать таблицу ключей (вариант б)\n");
-    printf("7 - Поиск по вариантному полю\n");
-    printf("8 - Поиск: вторичное, 2-комн., без животных, диапазон цен\n");
-    printf("9 - Оценка эффективности алгоритмов (время\\память)\n");
+    printf("2 - Просмотреть таблицу ключей\n");
+    printf("3 - Просмотреть таблицу по порядку ключей\n");
+    printf("4 - Актуализировать таблицу ключей\n");
+    printf("5 - Добавить запись\n");
+    printf("6 - Удалить запись по значению поля\n");
+    printf("7 - Отсортировать основную таблицу\n");
+    printf("8 - Отсортировать таблицу ключей\n");
+    printf("9 - Поиск по вариантному полю\n");
+    printf("10 - Поиск: вторичное, 2-комнатная, без животных\n");
+    printf("11 - Оценка эффективности алгоритмов\n");
     printf("0 - Сохранить и выйти\n");
 }
 
-void run_menu_loop(Table *table)
-{
-    int running = 1;
-    while (running)
+void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *output_filename)
+{   
+    int run = 1;
+    while (run)
     {
         print_main_menu();
-        int choice = input_int_with_range("Выберите пункт меню", 0, 9);
+        int choice = input_int_with_range("Выберите пункт меню", 0, 11);
         switch (choice)
         {
-            case 1: table_print(table);; break;
-            case 2: menu_view_key_table(table); break;
-            case 3: menu_add(table); break;
-            case 4: menu_remove(table); break;
-            case 5: menu_sort_table(table); break;
-            case 6: menu_sort_keys(table); break;
-            case 7: menu_search_variant(table); break;
-            case 8: menu_search_by_task(table); break;
-            case 9: menu_benchmark(table); break;
+            case 1: 
+                print_table(table);
+                break;
+            case 2: 
+                print_key_table(key_table);
+                break;
+            case 3:
+                menu_print_table_by_key(table, key_table, is_key_actual); 
+                break;
+            case 4: 
+                key_table_free(key_table);
+                build_key_table(table, key_table);
+                *is_key_actual = 1;
+                break;
+            case 5: 
+                menu_table_add(table, is_key_actual); 
+                break;
+            case 6: 
+                menu_table_remove(table, is_key_actual); 
+                break;
+            case 7: 
+                menu_sort_table(table, is_key_actual); 
+                break;
+            case 8: 
+                menu_sort_keys(key_table, is_key_actual); 
+                break;
+            case 9: 
+                menu_search_variable(table); 
+                break;
+            case 10: 
+                menu_search_by_task(table); 
+                break;
+            case 11: 
+                menu_benchmark(table); 
+                break;
             case 0:
-                if (save_table("data.txt", table) == OK)
-                    printf("Таблица сохранена в data.txt. Выход.\n");
+                if (save_table(output_filename, table) == OK)
+                    printf("Таблица сохранена в %s\n", output_filename);
                 else
-                    printf("Не удалось сохранить data.txt!\n");
-
-                running = 0;
+                    printf("Не удалось сохранить %s\n", output_filename);
+                run = 0;
                 break;
         }
     }
