@@ -6,9 +6,6 @@
 
 typedef enum { SUB_HAS_FINISHING, SUB_BUILD_YEAR, SUB_OWNERS, SUB_HAD_PETS } SubFieldId;
 
-
-int search_by_variant(Table *table, FlatType type, SubFieldId field, int value, Table *out);
-
 int search_by_task(Table *table, double min_price, double max_price, Table *out);
 
 #endif

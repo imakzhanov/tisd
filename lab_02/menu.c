@@ -219,51 +219,6 @@ void menu_sort_keys(KeyTable *key_table, int *is_key_actual)
     printf("Таблица ключей отсортирована:\n");
 }
 
-void menu_search_variable(Table *table)
-{
-    int type_choice = input_int_with_range("Тип (0 - первичное, 1 - вторичное)", 0, 1);
-    Table out;
-    table_init(&out);
-    int rc;
-
-    if (type_choice == 0)
-    {
-        int val = input_int_with_range("Искать по отделке (1 - есть отделка, 0 - нет отделки)", 0, 1);
-        rc = search_by_variant(table, PRIMARY, SUB_HAS_FINISHING, val, &out);
-    }
-    else
-    {
-        printf("1 - год постройки\n2 - количество собственников\n3 - были ли животные\n");
-        int field_choice = input_int_with_range("Введите", 1, 3);
-        SubFieldId field;
-        int val;
-        if (field_choice == 1)
-        {
-            field = SUB_BUILD_YEAR;
-            val = input_int_with_range("Год постройки", 1900, 2026);
-        }
-        else if (field_choice == 2)
-        {
-            field = SUB_OWNERS;
-            val = input_int_with_range("Количество собственников", 1, 50);
-        }
-        else
-        {
-            field = SUB_HAD_PETS;
-            val = input_int_with_range("Были ли животные? (1 - да, 0 - нет)", 0, 1);
-        }
-        rc = search_by_variant(table, SECONDARY, field, val, &out);
-    }
-
-    if (rc == OK)
-    {
-        printf("Найдено записей: %d\n", out.count);
-        print_table(&out);
-    }
-    else
-        printf("Записи не найдены.\n");
-    table_free(&out);
-}
 
 void menu_search_by_task(Table *table)
 {
@@ -307,9 +262,8 @@ void print_main_menu(void)
     printf("6 - Удалить запись по значению поля\n");
     printf("7 - Отсортировать основную таблицу\n");
     printf("8 - Отсортировать таблицу ключей\n");
-    printf("9 - Поиск по вариантному полю\n");
-    printf("10 - Поиск: вторичное, 2-комнатная, без животных\n");
-    printf("11 - Оценка эффективности алгоритмов\n");
+    printf("9 - Поиск: вторичное, 2-комнатная, без животных\n");
+    printf("10 - Оценка эффективности алгоритмов\n");
     printf("0 - Сохранить и выйти\n");
 }
 
@@ -319,7 +273,7 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
     while (run)
     {
         print_main_menu();
-        int choice = input_int_with_range("Выберите пункт меню", 0, 11);
+        int choice = input_int_with_range("Выберите пункт меню", 0, 10);
         switch (choice)
         {
             case 1: 
@@ -348,13 +302,11 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
             case 8: 
                 menu_sort_keys(key_table, is_key_actual); 
                 break;
-            case 9: 
-                menu_search_variable(table); 
                 break;
-            case 10: 
+            case 9: 
                 menu_search_by_task(table); 
                 break;
-            case 11: 
+            case 10: 
                 menu_benchmark(table); 
                 break;
             case 0:
