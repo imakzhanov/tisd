@@ -5,6 +5,16 @@
 #include "errors.h"
 
 #define MAX_ADDRESS_LEN 50
+#define MIN_AREA 1.0
+#define MAX_AREA 10000.0
+#define MIN_ROOMS 1
+#define MAX_ROOMS 10
+#define MIN_PRICE 1.0
+#define MAX_PRICE 1000000.0
+#define MIN_YEAR 1900
+#define MAX_YEAR 2026
+#define MIN_OWNERS 1
+#define MAX_OWNERS 50
 
 typedef enum {PRIMARY, SECONDARY} FlatType;
 
@@ -46,9 +56,6 @@ typedef struct {
 typedef enum { ADDRESS_FIELD, AREA_FIELD, ROOMS_FIELD, PRICE_M2_FIELD } FieldId;
 
 
-
-
-
 void table_init(Table *t);
 int table_add(Table *t, Flat f);
 int flat_matches_field(Flat *f, FieldId field, void *value);
@@ -56,7 +63,7 @@ int table_remove_by_field(Table *t, FieldId field, void *value, int *out_removed
 void table_free(Table *t);
 
 void print_flat_header(void);
-void print_flat(Flat *f);
+void print_flat(int index, Flat *f);
 void print_table(Table *table);
 
 int build_key_table(Table *table, KeyTable *key_table);

@@ -75,7 +75,7 @@ double input_double_with_range(char *text, double min, double max)
     }
 }
 
-void input_string(char *text, char *buf, int maxlen)
+void input_address(char *text, char *buf, int maxlen)
 {
     while (1)
     {
@@ -98,10 +98,10 @@ void input_string(char *text, char *buf, int maxlen)
 void input_flat(Flat *f)
 {
     memset(f, 0, sizeof(Flat));
-    input_string("Адрес", f->address, MAX_ADDRESS_LEN);
-    f->area = input_double_with_range("Площадь, м2", 1.0, 10000.0);
-    f->rooms = input_int_with_range("Количество комнат", 1, 10);
-    f->price_m2 = input_double_with_range("Стоимость за 1 м2", 1.0, 10000000.0);
+    input_address("Адрес", f->address, MAX_ADDRESS_LEN);
+    f->area = input_double_with_range("Площадь, м2", MIN_AREA, MAX_AREA);
+    f->rooms = input_int_with_range("Количество комнат", MIN_ROOMS, MAX_ROOMS);
+    f->price_m2 = input_double_with_range("Стоимость за 1 м2", MIN_PRICE, MAX_PRICE);
 
     int type_choice = input_int_with_range("Тип жилья (0 - первичное, 1 - вторичное)", 0, 1);
     if (type_choice == 0)
@@ -114,9 +114,9 @@ void input_flat(Flat *f)
     {
         f->type = SECONDARY;
         f->variable.secondary.build_year =
-            input_int_with_range("Год постройки", 1900, 2026);
+            input_int_with_range("Год постройки", MIN_YEAR, MAX_YEAR);
         f->variable.secondary.owners =
-            input_int_with_range("Количество предыдущих собственников", 0, 50);
+            input_int_with_range("Количество предыдущих собственников", MIN_OWNERS, MAX_OWNERS);
         f->variable.secondary.had_pets =
             input_int_with_range("Были ли животные? (1 - да, 0 - нет)", 0, 1);
     }
@@ -148,25 +148,25 @@ void menu_table_remove(Table *table, int *is_key_actual)
         case 1:
         {
             char address[MAX_ADDRESS_LEN];
-            input_string("Адрес для удаления", address, MAX_ADDRESS_LEN);
+            input_address("Адрес для удаления", address, MAX_ADDRESS_LEN);
             rc = table_remove_by_field(table, ADDRESS_FIELD, address, &removed);
             break;
         }
         case 2:
         {
-            double area = input_double_with_range("Площадь для удаления", 0.0, 100000.0);
+            double area = input_double_with_range("Площадь для удаления", MIN_AREA, MAX_AREA);
             rc = table_remove_by_field(table, AREA_FIELD, &area, &removed);
             break;
         }
         case 3:
         {
-            int rooms = input_int_with_range("Количество комнат для удаления", 0, 100);
+            int rooms = input_int_with_range("Количество комнат для удаления", MIN_ROOMS, MAX_ROOMS);
             rc = table_remove_by_field(table, ROOMS_FIELD, &rooms, &removed);
             break;
         }
         case 4:
         {
-            double price = input_double_with_range("Цена за м2 для удаления", 0.0, 100000000.0);
+            double price = input_double_with_range("Цена за м2 для удаления", MIN_PRICE, MAX_PRICE);
             rc = table_remove_by_field(table, PRICE_M2_FIELD, &price, &removed);
             break;
         }
@@ -181,18 +181,6 @@ void menu_table_remove(Table *table, int *is_key_actual)
         printf("Записи с таким значением поля не найдены.\n");
 }
 
-
-void menu_print_table_by_key(Table *table, KeyTable *key_table, int *is_key_actual)
-{
-    if (!*is_key_actual)
-    {
-        printf("Таблица ключей неактуальна, пересоздайте её.\n");
-        return;
-    }
-    printf("Таблица по порядку ключей:\n");
-    print_table_by_key(key_table, table);
-}
-
 void menu_sort_table(Table *table, int *is_key_actual)
 {
     int algorithm = input_int_with_range("Алгоритм (1 - сортировка пузырьком, 2 - быстрая сортировка)", 1, 2);
@@ -200,7 +188,7 @@ void menu_sort_table(Table *table, int *is_key_actual)
         sort_bubble_table(table);
     else
         sort_quick_table(table);
-    printf("Таблица отсортирована по цене за м2.\n");
+    printf("Таблица отсортирована\n");
     *is_key_actual = 0;
 }
 
@@ -216,25 +204,22 @@ void menu_sort_keys(KeyTable *key_table, int *is_key_actual)
         sort_bubble_keys(key_table);
     else
         sort_quick_keys(key_table);
-    printf("Таблица ключей отсортирована:\n");
+    printf("Таблица ключей отсортирована\n");
 }
 
 
 void menu_search_by_task(Table *table)
 {
     printf("Поиск: вторичная, 2-комнатная, без животных, в диапазоне цен за м2.\n");
-    double min_price = input_double_with_range("Минимальная цена за м2", 0.0, 100000000.0);
-    double max_price = input_double_with_range("Максимальная цена за м2", min_price, 100000000.0);
+    double min_price = input_double_with_range("Минимальная цена за м2", MIN_PRICE, MAX_PRICE);
+    double max_price = input_double_with_range("Максимальная цена за м2", min_price, MAX_PRICE);
 
     Table out;
     table_init(&out);
     int rc = search_by_task(table, min_price, max_price, &out);
 
     if (rc == OK)
-    {
-        printf("Найдено записей: %d\n", out.count);
         print_table(&out);
-    }
     else
         printf("Записи не найдены.\n");
     table_free(&out);
@@ -257,7 +242,7 @@ void print_main_menu(void)
     printf("1 - Просмотреть основную таблицу\n");
     printf("2 - Просмотреть таблицу ключей\n");
     printf("3 - Просмотреть таблицу по порядку ключей\n");
-    printf("4 - Актуализировать таблицу ключей\n");
+    printf("4 - Обновить таблицу ключей\n");
     printf("5 - Добавить запись\n");
     printf("6 - Удалить запись по значению поля\n");
     printf("7 - Отсортировать основную таблицу\n");
@@ -283,7 +268,13 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
                 print_key_table(key_table);
                 break;
             case 3:
-                menu_print_table_by_key(table, key_table, is_key_actual); 
+                if (!*is_key_actual)
+                {
+                    printf("Таблица ключей неактуальна, пересоздайте её.\n");
+                    return;
+                }
+                printf("Таблица по порядку ключей:\n");
+                print_table_by_key(key_table, table);
                 break;
             case 4: 
                 key_table_free(key_table);
