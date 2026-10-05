@@ -39,11 +39,8 @@ int time_sort_keys(Table *table, void (*sort)(KeyTable *), double *time)
         if (build_key_table(table, &key_table) != OK)
             return ERR_MEMORY;
 
-        double trash = 0;
         clock_t start = clock();
         sort(&key_table);
-        for (int i = 0; i < key_table.count; i++)
-            trash += table->data[key_table.items[i].index].price_m2;
         clock_t end = clock();
 
         total += (double)(end - start) / CLOCKS_PER_SEC * 1000000;
@@ -79,8 +76,8 @@ int make_report(char *filename, Table *table)
     if (f == NULL)
         return ERR_FILE_OPEN;
 
-    fprintf(f, "Records: %d\n\n", table->count);
-    fprintf(f, "%-20s %12s %12s %10s\n", "Method", "Time, microsec", "Memory, B", "Time, %");
+    fprintf(f, "Records: %d\n", table->count);
+    fprintf(f, "%-15s %12s %12s %10s\n", "Method", "Average Time, microsec", "Memory, B", "Time, %");
     fprintf(f, "%-20s %12.0f %12ld %10.1f\n", "Bubble (table)", bubble_table, table_memory, 100.0);
     fprintf(f, "%-20s %12.0f %12ld %10.1f\n", "Bubble (keys)", bubble_keys, keys_memory,
             percent(bubble_keys, bubble_table));

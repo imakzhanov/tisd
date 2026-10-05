@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     if (load_table(in_filename, &table) == OK)
         printf("Загружено записей из %s: %d\n", in_filename, table.count);
     else
-        printf("Файл %s не найден или пуст. Сейчас таблица пуста.\n", in_filename);
+        printf("Файл %s не найден или пуст. Начальная таблица пуста.\n", in_filename);
 
     KeyTable key_table;
     int is_key_actual = 0;
