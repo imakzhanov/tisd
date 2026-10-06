@@ -103,8 +103,8 @@ void input_flat(Flat *f)
     f->rooms = input_int_with_range("Количество комнат", MIN_ROOMS, MAX_ROOMS);
     f->price_m2 = input_double_with_range("Стоимость за 1 м2", MIN_PRICE, MAX_PRICE);
 
-    int type_choice = input_int_with_range("Тип жилья (0 - первичное, 1 - вторичное)", 0, 1);
-    if (type_choice == 0)
+    int type_choice = input_int_with_range("Тип жилья (1 - первичное, 2 - вторичное)", 1, 2);
+    if (type_choice == 1)
     {
         f->type = PRIMARY;
         f->variable.primary.has_finishing =

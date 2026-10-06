@@ -5,7 +5,7 @@
 #include "bench.h"
 #include "sort.h"
 
-#define REPEAT_COUNT 50
+#define REPEAT_COUNT 15
 
 double trash;
 
@@ -94,6 +94,7 @@ int make_report(char *filename, Table *table)
         return ERR_FILE_OPEN;
 
     fprintf(f, "Количество записей: %d\n", table->count);
+    fprintf(f, "Количество запусков (берется среднее): %d\n", REPEAT_COUNT);
     fprintf(f, "Сортировка пузырьком всей таблицы (Bubble (table)) принята за 100%%\n\n");
 
     fprintf(f, "%-16s %25s %25s %8s %15s %15s %8s\n",

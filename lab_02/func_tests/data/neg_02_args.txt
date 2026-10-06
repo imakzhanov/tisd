@@ -1,0 +1,1 @@
+./data/nofile.txt /tmp/func_out.txt
