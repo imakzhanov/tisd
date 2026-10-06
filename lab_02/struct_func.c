@@ -67,6 +67,7 @@ void table_free(Table *t)
     t->data = NULL;
     t->count = 0;
 }
+
 void print_flat_header(void)
 {
     printf("%-6s %-20s %8s %6s %10s %10s %10s %11s %7s %9s\n",

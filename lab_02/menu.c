@@ -271,7 +271,7 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
                 if (!*is_key_actual)
                 {
                     printf("Таблица ключей неактуальна, пересоздайте её.\n");
-                    return;
+                    break;
                 }
                 printf("Таблица по порядку ключей:\n");
                 print_table_by_key(key_table, table);
