@@ -196,7 +196,7 @@ void menu_sort_keys(KeyTable *key_table, int *is_key_actual)
 {
     if (!*is_key_actual)
     {
-        printf("Таблица ключей неактуальна, пересоздайте её.\n");
+        printf("Таблица ключей неактуальна, пересоздайте её(пункт 4).\n");
         return;
     }
     int algorithm = input_int_with_range("Алгоритм (1 - сортировка пузырьком, 2 - быстрая сортировка)", 1, 2);
@@ -270,7 +270,7 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
             case 3:
                 if (!*is_key_actual)
                 {
-                    printf("Таблица ключей неактуальна, пересоздайте её.\n");
+                    printf("Таблица ключей неактуальна, пересоздайте её(пункт 4).\n");
                     break;
                 }
                 printf("Таблица по порядку ключей:\n");
@@ -280,6 +280,7 @@ void run_menu(Table *table, KeyTable *key_table, int *is_key_actual, char *outpu
                 key_table_free(key_table);
                 build_key_table(table, key_table);
                 *is_key_actual = 1;
+                printf("Таблица обновлена\n");
                 break;
             case 5: 
                 menu_table_add(table, is_key_actual); 
