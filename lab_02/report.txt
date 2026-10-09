@@ -1,0 +1,9 @@
+Количество записей: 10000
+Количество запусков (берется среднее): 15
+Сортировка пузырьком всей таблицы (Bubble (table)) принята за 100%
+
+Method              Average Sort, microsec  Sort+selection, microsec  Time, %   Sorted mem, B    Total mem, B   Mem, %
+Bubble (table)                      720281                    720281    100.0          960000          960000    100.0
+Bubble (keys)                       339696                    339880     47.2          160000         1120000    116.7
+Quick (table)                         2422                      2422      0.3          960000          960000    100.0
+Quick (keys)                          1334                      1374      0.2          160000         1120000    116.7
