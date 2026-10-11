@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#define MAX_SIZE 5000
+#include "config.h"
 
 // обычная матрица
 typedef struct

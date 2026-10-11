@@ -11,11 +11,10 @@
 #define MAKE_DIR(path) mkdir(path, 0777)
 #endif
 
+#include "config.h"
 #include "io.h"
 #include "struct_func.h"
 #include "errors.h"
-
-#define LINE_SIZE 128
 
 int read_line(char *buf, size_t size)
 {

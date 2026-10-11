@@ -4,11 +4,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "config.h"
 #include "struct_func.h"
 #include "errors.h"
-
-// сколько раз повторяется сложение в замере
-#define REPEATS 10
 
 typedef struct
 {
@@ -57,8 +55,8 @@ static int bench_compare(const standard_t *a, const standard_t *b, const csc_t *
 
 int main(void)
 {
-    const int sizes[] = {10, 50, 100, 200, 500, 1000, 5000};
-    const int percents[] = {1,2,3,4, 5,6,7,8,9, 10,15, 20, 30, 40, 50, 70, 100};
+    const int sizes[] = BENCH_SIZES;
+    const int percents[] = BENCH_PERCENTS;
     const int n_sizes = sizeof(sizes) / sizeof(sizes[0]);
     const int n_percents = sizeof(percents) / sizeof(percents[0]);
     bench_result_t r;

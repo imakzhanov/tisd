@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "config.h"
 #include "menu.h"
 #include "struct_func.h"
 #include "io.h"
@@ -9,7 +10,6 @@ standard_t a, b, res;
 csc_t csc_a, csc_b, csc_res;
 static int has_res_csc, has_res_std;
 
-#define RESULT_DIR "result"
 
 
 void print_menu(int has_a, int has_b, int has_res_csc, int has_res_std)
@@ -150,8 +150,8 @@ static int menu_standard_add(int has_a, int has_b)
     return OK;
 }
 
-// сохраняет в папку RESULT_DIR файлы в формате CSC: a.txt, b.txt и полученные результаты
-// (res_csc.txt - сложение в CSC, res_standard.txt - обычное сложение, переведённое в CSC)
+// сохраняет в папку RESULT_DIR файлы в формате CSC: A, B и полученные результаты
+// (FILE_RES_CSC - сложение в CSC, FILE_RES_STANDARD - обычное сложение, переведённое в CSC)
 static int menu_save(int has_a, int has_b)
 {
     csc_t res_csc;
@@ -164,28 +164,28 @@ static int menu_save(int has_a, int has_b)
 
     rc = create_dir(RESULT_DIR);
     if (rc == OK)
-        rc = save_csc(RESULT_DIR "/a.txt", &csc_a);
+        rc = save_csc(RESULT_DIR "/" FILE_A, &csc_a);
     if (rc == OK)
-        rc = save_csc(RESULT_DIR "/b.txt", &csc_b);
+        rc = save_csc(RESULT_DIR "/" FILE_B, &csc_b);
     if (rc == OK && has_res_csc)
-        rc = save_csc(RESULT_DIR "/res_csc.txt", &csc_res);
+        rc = save_csc(RESULT_DIR "/" FILE_RES_CSC, &csc_res);
     if (rc == OK && has_res_std)
     {
         rc = standard_to_csc(&res, &res_csc);
         if (rc == OK)
         {
-            rc = save_csc(RESULT_DIR "/res_standard.txt", &res_csc);
+            rc = save_csc(RESULT_DIR "/" FILE_RES_STANDARD, &res_csc);
             csc_free(&res_csc);
         }
     }
 
     if (rc == OK)
     {
-        printf("Сохранено в папку %s: a.txt, b.txt", RESULT_DIR);
+        printf("Сохранено в папку %s: " FILE_A ", " FILE_B, RESULT_DIR);
         if (has_res_csc)
-            printf(", res_csc.txt");
+            printf(", " FILE_RES_CSC);
         if (has_res_std)
-            printf(", res_standard.txt");
+            printf(", " FILE_RES_STANDARD);
         printf("\n");
     }
     return rc;

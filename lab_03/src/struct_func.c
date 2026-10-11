@@ -1,10 +1,8 @@
 #include <stdlib.h>
 
+#include "config.h"
 #include "struct_func.h"
 #include "errors.h"
-
-// модуль случайных значений при случайном заполнении
-#define RANDOM_VALUE_MAX 100
 
 void standard_fill_zero(standard_t *m, int rows, int cols)
 {

@@ -6,11 +6,6 @@
 
 #include "struct_func.h"
 
-// сколько элементов CSC выводить на экран, остальное заменяется на "(ещё N)"
-#define PRINT_LIMIT 100
-// обычная матрица выводится таблицей только до такого размера
-#define PRINT_STANDARD_MAX 30
-
 int read_line(char *buf, size_t size);
 int read_int(const char *prompt, int min, int max, int *value);
 
