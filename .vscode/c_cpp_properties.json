@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/lab_03/inc"
+            ],
+            "cStandard": "c99"
+        }
+    ],
+    "version": 4
+}

@@ -1,39 +1,43 @@
-# Лабораторная работа №3. Сборка: make [release | debug | run | clean]
+# Лабораторная работа 3
+#   make app    - программа app.exe
+#   make bench  - замеры времени и памяти
+#   make debug  - с отладочной информацией
+#   make clean  - удалить результаты сборки
 
-CC     = gcc
-CFLAGS = -std=c99 -Wall -Werror -Wpedantic -Wextra -Wvla -Iinc
+CC = gcc
+CFLAGS = -std=c99 -Wall -Werror -Wpedantic -Wextra -Wvla -Iinc -O0
 LDLIBS = -lm
 
-SRC = $(wildcard src/*.c)
+SRC = $(filter-out src/bench.c,$(wildcard src/*.c))
 OBJ = $(SRC:src/%.c=build/%.o)
+BENCH_OBJ = build/bench.o build/struct_func.o
 APP = app.exe
+BENCH = bench.exe
 
-# по умолчанию собираем release
-all: release
+all: app
 
-# make release - оптимизированная сборка
-release: CFLAGS += -O2
-release: clean $(APP)
+app: $(APP)
 
-# make debug - сборка с отладочной информацией
-debug: CFLAGS += -g -O0
-debug: clean $(APP)
+bench: $(BENCH)
 
-# make run - собрать (если нужно) и запустить
-run: $(APP)
-	./$(APP)
+debug: CFLAGS = -std=c99 -Wall -Werror -Wpedantic -Wextra -Wvla -Iinc -g -O0
+debug: clean app
 
-# make clean - удалить результаты сборки
 clean:
-	rm -rf build $(APP)
+	rm -rf build
+	rm -f $(APP) $(BENCH)
 
 $(APP): $(OBJ)
 	$(CC) $^ -o $@ $(LDLIBS)
 
-build/%.o: src/%.c | build
-	$(CC) $(CFLAGS) -c $< -o $@
+$(BENCH): $(BENCH_OBJ)
+	$(CC) $^ -o $@ $(LDLIBS)
 
-build:
+build/%.o : src/%.c
 	mkdir -p build
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-.PHONY: all release debug run clean
+# зависимости .o от заголовков (файлы .d создаёт gcc при компиляции)
+-include $(wildcard build/*.d)
+
+.PHONY: all app bench debug clean
