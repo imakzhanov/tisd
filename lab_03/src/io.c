@@ -56,29 +56,23 @@ static int input_size(int *rows, int *cols)
 int input_manual(standard_t *m)
 {
     char line[LINE_SIZE];
-    int rows, cols, k, i, j, value;
-    int rc;
+    int rows, cols, i, j, value;
+    int rc = input_size(&rows, &cols);
 
-    rc = input_size(&rows, &cols);
-    if (rc != OK)
-        return rc;
-    rc = read_int("Введите количество ненулевых элементов", 0, rows * cols, &k);
     if (rc != OK)
         return rc;
 
     standard_fill_zero(m, rows, cols);
-    if (k > 0)
-        printf("\nВводите элементы по одному в строке: <строка> <столбец> <значение>\n"
-               "строка от 1 до %d, столбец от 1 до %d, значение - целое, не равное 0\n", rows, cols);
+    printf("\nВводите элементы по одному в строке: <строка> <столбец> <значение>\n"
+           "строка от 1 до %d, столбец от 1 до %d, значение - целое, не равное 0\n"
+           "Ввод заканчивается первой строкой другого вида (например, пустой)\n", rows, cols);
 
-    for (int n = 0; n < k; n++)
+    // при вводе нумерация строк и столбцов с 1, в матрице с 0
+    for (int n = 1; ; n++)
     {
-        printf("Элемент %d из %d: ", n + 1, k);
-        rc = read_line(line, sizeof(line));
-        if (rc != OK)
-            return rc;
-        if (sscanf(line, "%d %d %d", &i, &j, &value) != 3)
-            return ERR_INPUT;
+        printf("Элемент %d: ", n);
+        if (read_line(line, sizeof(line)) != OK || sscanf(line, "%d %d %d", &i, &j, &value) != 3)
+            break;
         if (i < 1 || i > rows || j < 1 || j > cols)
             return ERR_RANGE;
         if (value == 0)
@@ -164,20 +158,15 @@ int input_random(standard_t *m)
     return rc;
 }
 
-// limit == 0 - выводить все элементы
-static void print_array(FILE *out, const char *label, const int *arr, int n, int limit)
+static void print_array(FILE *out, const char *label, const int *arr, int n)
 {
-    int shown = (limit > 0 && n > limit) ? limit : n;
-
     fprintf(out, "%-3s:", label);
-    for (int k = 0; k < shown; k++)
+    for (int k = 0; k < n; k++)
         fprintf(out, "%d ", arr[k]);
-    if (shown < n)
-        fprintf(out, " (ещё %d)", n - shown);
     fprintf(out, "\n");
 }
 
-void print_csc(FILE *out, const char *name, const csc_t *m, int limit)
+void print_csc(FILE *out, const char *name, const csc_t *m)
 {
     fprintf(out, "\n");
     fprintf(out, "Матрица %s в формате CSC: %d на %d, ненулевых элементов: %d\n", name, m->rows, m->cols, m->nonzero_count);
@@ -187,9 +176,9 @@ void print_csc(FILE *out, const char *name, const csc_t *m, int limit)
         return;
     }
     fprintf(out, "(A - значения, IA - номера строк значений, JA - начала столбцов в A/IA)\n");
-    print_array(out, "A", m->a, m->nonzero_count, limit);
-    print_array(out, "IA", m->ia, m->nonzero_count, limit);
-    print_array(out, "JA", m->ja, m->cols + 1, limit);
+    print_array(out, "A", m->a, m->nonzero_count);
+    print_array(out, "IA", m->ia, m->nonzero_count);
+    print_array(out, "JA", m->ja, m->cols + 1);
 }
 
 // одна строка из n чисел через пробел
@@ -228,12 +217,6 @@ int save_csc(const char *path, const csc_t *m)
 
 void print_standard(const char *name, const standard_t *m)
 {
-    if (m->rows > PRINT_STANDARD_MAX || m->cols > PRINT_STANDARD_MAX)
-    {
-        printf("Матрица %s (%d на %d) больше чем %d на %d, в обычном виде не выводится\n",
-               name, m->rows, m->cols, PRINT_STANDARD_MAX, PRINT_STANDARD_MAX);
-        return;
-    }
     printf("Матрица %s в обычном виде (%d на %d):\n", name, m->rows, m->cols);
     for (int i = 0; i < m->rows; i++)
     {

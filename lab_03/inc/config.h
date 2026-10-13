@@ -6,23 +6,21 @@
 // значения при случайном заполнении от -RANDOM_VALUE_MAX до RANDOM_VALUE_MAX, кроме нуля
 #define RANDOM_VALUE_MAX 100
 
-// максимальная длина вводимой строки
+// максимальная длина буфера
 #define LINE_SIZE 128
-// сколько элементов CSC выводить на экран
-#define PRINT_LIMIT 100
-// обычная матрица выводится таблицей только до такого размера
-#define PRINT_STANDARD_MAX 30
 
 #define RESULT_DIR "result"
-#define FILE_A "a.txt"
-#define FILE_B "b.txt"
-#define FILE_RES_CSC "res_csc.txt"
-#define FILE_RES_STANDARD "res_standard.txt"
 
-// замеры
-#define REPEATS 10
+// замеры: повторяются, пока погрешность среднего не станет меньше MAX_ERROR от самого среднего
+// минимальнное количество повторений при измерении
+#define MIN_SAMPLES 10
+// максимальное количество повторений при измерении
+#define MAX_SAMPLES 100
+#define MAX_ERROR 0.03
+#define SAMPLE_WORK 1000000
+
 // размеры матриц и проценты заполнения, для которых строится таблица
 #define BENCH_SIZES {10, 50, 100, 200, 500, 1000, 5000}
-#define BENCH_PERCENTS {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 70, 100}
+#define BENCH_PERCENTS {1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 70, 100}
 
 #endif

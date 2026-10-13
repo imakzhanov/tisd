@@ -13,7 +13,7 @@ void standard_fill_zero(standard_t *m, int rows, int cols)
             m->matrix[i][j] = 0;
 }
 
-// память, которую занимает матрица при стандартном хранении
+//сколько памяти надо при стандартном хранении
 size_t standard_memory(const standard_t *m)
 {
     return m->rows * m->cols * sizeof(int);
@@ -72,7 +72,7 @@ void csc_free(csc_t *m)
     csc_init(m);
 }
 
-// память под массив CSC
+// сколько памяти надо под массив CSC
 size_t csc_memory(const csc_t *m)
 {
     return (2 * m->nonzero_count + (m->cols + 1)) * sizeof(int);
@@ -84,7 +84,7 @@ size_t csc_memory(const csc_t *m)
  * @param a первое слагаемое
  * @param b второе слагаемое
  * @param res результат a + b
- * @return int OK или ERR_SIZE, если размеры не совпадают
+ * @return int
  */
 int standard_add(const standard_t *a, const standard_t *b, standard_t *res)
 {
@@ -105,7 +105,7 @@ int standard_add(const standard_t *a, const standard_t *b, standard_t *res)
  * @param a первое слагаемое
  * @param b второе слагаемое
  * @param res результат a + b, память выделяется внутри, освобождает вызывающий
- * @return int OK, ERR_SIZE или ERR_MEMORY
+ * @return int
  */
 int csc_add(const csc_t *a, const csc_t *b, csc_t *res)
 {
@@ -208,12 +208,11 @@ int standard_to_csc(const standard_t *src, csc_t *res)
 }
 
 /**
- * @brief Перевод матрицы из формата CSC в стандартный вид с проверкой корректности CSC
+ * @brief Перевод матрицы из формата CSC в стандартный вид
  * 
- * @param src матрица в формате CSC
- * @param res результат
- * @return int OK, ERR_FILE_FORMAT (неверный ja), ERR_RANGE (номер строки вне матрицы),
- *             ERR_ZERO (нулевое значение) или ERR_DUPLICATE (два элемента в одной клетке)
+ * @param src 
+ * @param res 
+ * @return int
  */
 int csc_to_standard(const csc_t *src, standard_t *res)
 {
@@ -223,8 +222,6 @@ int csc_to_standard(const csc_t *src, standard_t *res)
     standard_fill_zero(res, src->rows, src->cols);
     for (int j = 0; j < src->cols; j++)
     {
-        if (src->ja[j] > src->ja[j + 1])
-            return ERR_FILE_FORMAT;
         for (int k = src->ja[j]; k < src->ja[j + 1]; k++)
         {
             if (src->ia[k] < 0 || src->ia[k] >= src->rows)

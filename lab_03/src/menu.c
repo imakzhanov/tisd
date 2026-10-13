@@ -8,7 +8,7 @@
 
 standard_t a, b, res;
 csc_t csc_a, csc_b, csc_res;
-static int has_res_csc, has_res_std;
+int has_res_csc, has_res_std;
 
 
 
@@ -32,8 +32,7 @@ void print_menu(int has_a, int has_b, int has_res_csc, int has_res_std)
     printf("-----------------------------------------\n");
 }
 
-// вводит матрицу из файла path (если path != NULL) или способом, выбранным в меню;
-// при ошибке ввода матрица считается не введённой
+// вводит матрицу из файла path, при ошибке ввода матрица считается не введённой
 int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cdst, int *has)
 {
     int choice = 0;
@@ -49,7 +48,7 @@ int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cds
     }
 
     *has = 0;
-    has_res_csc = has_res_std = 0; // старый результат относится к прежним матрицам
+    has_res_csc = has_res_std = 0;
     csc_free(cdst);
 
     if (path != NULL)
@@ -64,7 +63,7 @@ int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cds
         return rc;
 
     *has = 1;
-    printf("Матрица %s введена: %d x %d, ненулевых элементов: %d\n", name, cdst->rows, cdst->cols, cdst->nonzero_count);
+    printf("Матрица %s введена: %d на %d, ненулевых элементов: %d\n", name, cdst->rows, cdst->cols, cdst->nonzero_count);
     return OK;
 }
 
@@ -85,7 +84,7 @@ static int show_matrices(int has_a, int has_b, int as_csc)
     if (has_a)
     {
         if (as_csc)
-            print_csc(stdout, "A", &csc_a, PRINT_LIMIT);
+            print_csc(stdout, "A", &csc_a);
         else
             print_standard("A", &a);
     }
@@ -95,7 +94,7 @@ static int show_matrices(int has_a, int has_b, int as_csc)
     if (has_b)
     {
         if (as_csc)
-            print_csc(stdout, "B", &csc_b, PRINT_LIMIT);
+            print_csc(stdout, "B", &csc_b);
         else
             print_standard("B", &b);
     }
@@ -118,14 +117,11 @@ static int menu_csc_add(int has_a, int has_b)
     has_res_csc = 1;
 
     printf("Результат сложения в формате CSC:\n");
-    print_csc(stdout, "A + B", &csc_res, PRINT_LIMIT);
-    if (csc_res.rows <= PRINT_STANDARD_MAX && csc_res.cols <= PRINT_STANDARD_MAX)
-    {
-        // res занят результатом обычного сложения, если он есть; иначе используем его для таблицы
-        rc = has_res_std ? OK : csc_to_standard(&csc_res, &res);
-        if (rc == OK)
-            print_standard("A + B", &res);
-    }
+    print_csc(stdout, "A + B", &csc_res);
+
+    rc = has_res_std ? OK : csc_to_standard(&csc_res, &res);
+    if (rc == OK)
+        print_standard("A + B", &res);
     return rc;
 }
 
@@ -142,7 +138,7 @@ static int menu_standard_add(int has_a, int has_b)
     has_res_std = 1;
 
     int nonzero_count = standard_count_nonzero(&res);
-    printf("Результат обычного сложения: %d x %d, ненулевых элементов: %d\n", res.rows, res.cols, nonzero_count);
+    printf("Результат обычного сложения: %d на %d, ненулевых элементов: %d\n", res.rows, res.cols, nonzero_count);
     if (nonzero_count == 0)
         printf("Матрица нулевая\n");
     else
@@ -150,8 +146,7 @@ static int menu_standard_add(int has_a, int has_b)
     return OK;
 }
 
-// сохраняет в папку RESULT_DIR файлы в формате CSC: A, B и полученные результаты
-// (FILE_RES_CSC - сложение в CSC, FILE_RES_STANDARD - обычное сложение, переведённое в CSC)
+// сохраняет в папку RESULT_DIR в формате CSC
 static int menu_save(int has_a, int has_b)
 {
     csc_t res_csc;
@@ -159,33 +154,31 @@ static int menu_save(int has_a, int has_b)
 
     if (!has_a || !has_b)
         return ERR_NO_DATA;
-    if (!has_res_csc && !has_res_std)
-        return ERR_NO_RESULT;
 
     rc = create_dir(RESULT_DIR);
     if (rc == OK)
-        rc = save_csc(RESULT_DIR "/" FILE_A, &csc_a);
+        rc = save_csc(RESULT_DIR "/a.txt", &csc_a);
     if (rc == OK)
-        rc = save_csc(RESULT_DIR "/" FILE_B, &csc_b);
+        rc = save_csc(RESULT_DIR "/b.txt", &csc_b);
     if (rc == OK && has_res_csc)
-        rc = save_csc(RESULT_DIR "/" FILE_RES_CSC, &csc_res);
+        rc = save_csc(RESULT_DIR "/res_csc.txt", &csc_res);
     if (rc == OK && has_res_std)
     {
         rc = standard_to_csc(&res, &res_csc);
         if (rc == OK)
         {
-            rc = save_csc(RESULT_DIR "/" FILE_RES_STANDARD, &res_csc);
+            rc = save_csc(RESULT_DIR "/res_standard.txt", &res_csc);
             csc_free(&res_csc);
         }
     }
 
     if (rc == OK)
     {
-        printf("Сохранено в папку %s: " FILE_A ", " FILE_B, RESULT_DIR);
+        printf("Сохранено в папку %s: a.txt, b.txt", RESULT_DIR);
         if (has_res_csc)
-            printf(", " FILE_RES_CSC);
+            printf(", res_csc.txt");
         if (has_res_std)
-            printf(", " FILE_RES_STANDARD);
+            printf(", res_standard.txt");
         printf("\n");
     }
     return rc;
