@@ -270,7 +270,7 @@ int standard_fill_random(standard_t *m, int rows, int cols, int percent)
     standard_fill_zero(m, rows, cols);
 
     long total = (long)rows * cols;
-    long count = total * percent / 100; // округление вниз
+    long count = total * percent / 100; // сколько элементов заполнять, округление вниз
 
     int pos = 0;
     // каждая клетка берется с вероятностью (сколько осталось взять) / (сколько осталось клеток)

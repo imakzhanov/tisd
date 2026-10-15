@@ -13,8 +13,8 @@
 
 #include "config.h"
 #include "io.h"
-#include "struct_func.h"
 #include "errors.h"
+#include "struct_func.h"
 
 int read_line(char *buf, size_t size)
 {
@@ -44,8 +44,16 @@ int read_int(const char *text, int min, int max, int *value)
     return OK;
 }
 
-static int input_size(int *rows, int *cols)
+static int input_size(int *rows, int *cols, int fixed_rows, int fixed_cols)
 {
+    if (fixed_rows > 0 && fixed_cols > 0)
+    {
+        *rows = fixed_rows;
+        *cols = fixed_cols;
+        printf("Размер матрицы задан первой матрицей: %d на %d\n", fixed_rows, fixed_cols);
+        return OK;
+    }
+
     int rc = read_int("Введите число строк", 1, MAX_SIZE, rows);
     if (rc == OK)
         rc = read_int("Введите число столбцов", 1, MAX_SIZE, cols);
@@ -53,11 +61,11 @@ static int input_size(int *rows, int *cols)
 }
 
 // координатный ввод
-int input_manual(standard_t *m)
+int input_manual(standard_t *m, int fixed_rows, int fixed_cols)
 {
     char line[LINE_SIZE];
     int rows, cols, i, j, value;
-    int rc = input_size(&rows, &cols);
+    int rc = input_size(&rows, &cols, fixed_rows, fixed_cols);
 
     if (rc != OK)
         return rc;
@@ -73,12 +81,19 @@ int input_manual(standard_t *m)
         printf("Элемент %d: ", n);
         if (read_line(line, sizeof(line)) != OK || sscanf(line, "%d %d %d", &i, &j, &value) != 3)
             break;
+        rc = OK;
         if (i < 1 || i > rows || j < 1 || j > cols)
-            return ERR_RANGE;
-        if (value == 0)
-            return ERR_ZERO;
-        if (m->matrix[i - 1][j - 1] != 0)
-            return ERR_DUPLICATE;
+            rc = ERR_RANGE;
+        else if (value == 0)
+            rc = ERR_ZERO;
+        else if (m->matrix[i - 1][j - 1] != 0)
+            rc = ERR_DUPLICATE;
+        if (rc != OK)
+        {
+            print_error(rc);
+            n--;
+            continue;
+        }
         m->matrix[i - 1][j - 1] = value;
     }
     return OK;
@@ -147,10 +162,10 @@ int input_file(const char *path, standard_t *m)
     return rc;
 }
 
-int input_random(standard_t *m)
+int input_random(standard_t *m, int fixed_rows, int fixed_cols)
 {
     int rows, cols, percent;
-    int rc = input_size(&rows, &cols);
+    int rc = input_size(&rows, &cols, fixed_rows, fixed_cols);
     if (rc == OK)
         rc = read_int("Введите процент заполнения ненулевыми", 0, 100, &percent);
     if (rc == OK)

@@ -9,9 +9,10 @@
 int read_line(char *buf, size_t size);
 int read_int(const char *prompt, int min, int max, int *value);
 
-int input_manual(standard_t *m);
+// fixed_rows/fixed_cols: если > 0, размер матрицы задан заранее и не запрашивается
+int input_manual(standard_t *m, int fixed_rows, int fixed_cols);
 int input_file(const char *path, standard_t *m);
-int input_random(standard_t *m);
+int input_random(standard_t *m, int fixed_rows, int fixed_cols);
 
 void print_csc(FILE *out, const char *name, const csc_t *m);
 // создаёт папку (если она уже есть - не ошибка)

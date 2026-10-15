@@ -28,19 +28,25 @@ void print_menu(int has_a, int has_b, int has_res_csc, int has_res_std)
     printf("5 - Сложить A + B в формате CSC\n");
     printf("6 - Сложить A + B обычным способом\n");
     printf("7 - Сохранить A, B и результат в папку %s\n", RESULT_DIR);
+    printf("8 - Удалить введённые матрицы и результаты\n");
     printf("0 - Выход\n");
     printf("-----------------------------------------\n");
 }
 
-// вводит матрицу из файла path, при ошибке ввода матрица считается не введённой
-int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cdst, int *has)
+
+int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cdst, int *has,
+                 const standard_t *other)
 {
     int choice = 0;
     int rc;
+    int fixed_rows = other ? other->rows : 0;
+    int fixed_cols = other ? other->cols : 0;
 
     if (path == NULL)
     {
         printf("Способ ввода матрицы %s:\n", name);
+        if (other != NULL)
+            printf("Размер матрицы %s должен быть %d на %d\n", name, fixed_rows, fixed_cols);
         printf("1 - вручную (координатами)\n2 - случайно (с вводом процента заполнения)\n0 - отмена\n");
         rc = read_int("Выберите способ", 0, 2, &choice);
         if (rc != OK || choice == 0)
@@ -52,11 +58,15 @@ int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cds
     csc_free(cdst);
 
     if (path != NULL)
+    {
         rc = input_file(path, dst);
+        if (rc == OK && other != NULL && (dst->rows != fixed_rows || dst->cols != fixed_cols))
+            rc = ERR_SIZE;
+    }
     else if (choice == 1)
-        rc = input_manual(dst);
+        rc = input_manual(dst, fixed_rows, fixed_cols);
     else
-        rc = input_random(dst);
+        rc = input_random(dst, fixed_rows, fixed_cols);
     if (rc == OK)
         rc = standard_to_csc(dst, cdst);
     if (rc != OK)
@@ -65,6 +75,17 @@ int input_matrix(const char *name, const char *path, standard_t *dst, csc_t *cds
     *has = 1;
     printf("Матрица %s введена: %d на %d, ненулевых элементов: %d\n", name, cdst->rows, cdst->cols, cdst->nonzero_count);
     return OK;
+}
+
+// удаляет обе матрицы и результаты
+static void delete_matrices(int *has_a, int *has_b)
+{
+    csc_free(&csc_a);
+    csc_free(&csc_b);
+    csc_free(&csc_res);
+    *has_a = *has_b = 0;
+    has_res_csc = has_res_std = 0;
+    printf("Матрицы и результаты удалены\n");
 }
 
 static int check_operands(int has_a, int has_b)
@@ -198,9 +219,9 @@ int run_menu(const char *path_a, const char *path_b)
 
     if (path_a != NULL)
     {
-        rc = input_matrix("A", path_a, &a, &csc_a, &has_a);
+        rc = input_matrix("A", path_a, &a, &csc_a, &has_a, NULL);
         if (rc == OK)
-            rc = input_matrix("B", path_b, &b, &csc_b, &has_b);
+            rc = input_matrix("B", path_b, &b, &csc_b, &has_b, &a);
         if (rc != OK)
         {
             print_error(rc);
@@ -213,7 +234,7 @@ int run_menu(const char *path_a, const char *path_b)
     while (run)
     {
         print_menu(has_a, has_b, has_res_csc, has_res_std);
-        rc = read_int("Выберите пункт", 0, 7, &choice);
+        rc = read_int("Выберите пункт", 0, 8, &choice);
         if (rc != OK)
         {
             print_error(rc);
@@ -223,10 +244,10 @@ int run_menu(const char *path_a, const char *path_b)
         switch (choice)
         {
             case 1:
-                rc = input_matrix("A", NULL, &a, &csc_a, &has_a);
+                rc = input_matrix("A", NULL, &a, &csc_a, &has_a, has_b ? &b : NULL);
                 break;
             case 2:
-                rc = input_matrix("B", NULL, &b, &csc_b, &has_b);
+                rc = input_matrix("B", NULL, &b, &csc_b, &has_b, has_a ? &a : NULL);
                 break;
             case 3:
                 rc = show_matrices(has_a, has_b, 1);
@@ -242,6 +263,10 @@ int run_menu(const char *path_a, const char *path_b)
                 break;
             case 7:
                 rc = menu_save(has_a, has_b);
+                break;
+            case 8:
+                delete_matrices(&has_a, &has_b);
+                rc = OK;
                 break;
             case 0:
                 run = 0;
