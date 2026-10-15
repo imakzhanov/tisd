@@ -36,8 +36,8 @@ static int add_with_choose_type(int use_csc)
     return csc_add(&csc_a, &csc_b, &csc_res);
 }
 
-// среднее время одного сложения. замер - пачка из batch сложений. Замеры повторяются, пока погрешность среднего не станет мала
-static int measure(int use_csc, int batch, double *mean)
+// среднее время одного сложения. замер - пачка из BATCH_SIZE сложений. Замеры повторяются, пока погрешность среднего не станет мала
+static int measure(int use_csc, double *mean)
 {
     int n = 0; // кол-во замеров
     double m2 = 0; // сумма квадратов отклонений замеров
@@ -48,9 +48,9 @@ static int measure(int use_csc, int batch, double *mean)
     while (rc == OK && (n < MIN_SAMPLES || (n < MAX_SAMPLES && 2 * sqrt(m2 / (n - 1) / n) > MAX_ERROR * *mean)))
     {
         start = now_us();
-        for (int k = 0; k < batch && rc == OK; k++)
+        for (int k = 0; k < BATCH_SIZE && rc == OK; k++)
             rc = add_with_choose_type(use_csc);
-        time = (now_us() - start) / batch;
+        time = (now_us() - start) / BATCH_SIZE;
 
         n++;
         delta = time - *mean;
@@ -63,7 +63,6 @@ static int measure(int use_csc, int batch, double *mean)
 // две случайные матрицы n на n с заданным процентом заполнения, замер обоих способов сложения
 static int bench_percent(int n, int percent, bench_result_t *r)
 {
-    int batch = SAMPLE_WORK / (n * n) + 1;
     int rc = OK;
 
     standard_fill_random(&std_a, n, n, percent);
@@ -72,9 +71,9 @@ static int bench_percent(int n, int percent, bench_result_t *r)
     standard_to_csc(&std_a, &csc_a);
     standard_to_csc(&std_b, &csc_b);
 
-    rc = measure(0, batch, &r->standard_time);
+    rc = measure(0, &r->standard_time);
     if (rc == OK)
-        rc = measure(1, batch, &r->csc_time);
+        rc = measure(1, &r->csc_time);
 
     r->standard_memory = standard_memory(&std_a) + standard_memory(&std_b) + standard_memory(&std_res);
     r->csc_memory = csc_memory(&csc_a) + csc_memory(&csc_b) + csc_memory(&csc_res);

@@ -37,7 +37,6 @@ build/%.o : src/%.c
 	mkdir -p build
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
-# зависимости .o от заголовков (файлы .d создаёт gcc при компиляции)
 -include $(wildcard build/*.d)
 
 .PHONY: all app bench debug clean
