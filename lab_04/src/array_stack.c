@@ -1,19 +1,7 @@
 #include <stdio.h>
 
-#define STACK_SIZE 10
-
-#define OK 0
-#define ERR_OVERFLOW 1
-#define ERR_EMPTY 2
-#define ERR_STACK_NUM 3
-
-// два стека в одном массиве: первый растет с начала вправо, второй с конца влево
-typedef struct
-{
-    double data[STACK_SIZE];
-    int top1; // индекс вершины первого стека, -1 если пуст
-    int top2; // индекс вершины второго стека, STACK_SIZE если пуст
-} stack_t;
+#include "array_stack.h"
+#include "errors.h"
 
 void stack_init(stack_t *s)
 {
@@ -75,28 +63,3 @@ void stack_print(const stack_t *s, int num)
             printf(" %g", s->data[i]);
     printf("\n");
 }
-
-int main(void)
-{
-    stack_t s;
-    double value;
-
-    stack_init(&s);
-    for (int i = 1; i <= 6; i++)
-        stack_push(&s, 1, i);
-    for (int i = 1; i <= 4; i++)
-        stack_push(&s, 2, i * 1.5);
-
-    stack_print(&s, 1);
-    stack_print(&s, 2);
-    printf("Переполнение при push: %d\n", stack_push(&s, 1, 100) == ERR_OVERFLOW);
-
-    stack_pop(&s, 2, &value);
-    printf("pop из второго: %g\n", value);
-    stack_push(&s, 1, 7);
-    stack_print(&s, 1);
-    stack_print(&s, 2);
-
-    return 0;
-}
-

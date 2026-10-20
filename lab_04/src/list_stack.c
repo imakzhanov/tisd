@@ -1,30 +1,8 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define OK 0
-#define ERR_OVERFLOW 1
-#define ERR_EMPTY 2
-#define ERR_MEMORY 3
-
-#define MAX_FREED 20
-
-typedef struct node
-{
-    double value;
-    struct node *next;
-} node_t;
-
-// дескриптор стека-списка
-typedef struct
-{
-    node_t *top;     // вершина, NULL если стек пуст
-    int count;       // текущее число элементов
-    int max_count;   // максимальное число элементов
-    uintptr_t max_addr; // адрес узла выше этого значения - переполнение
-    void *freed[MAX_FREED]; // адреса освобожденных узлов
-    int freed_count;
-} list_stack_t;
+#include "errors.h"
+#include "list_stack.h"
 
 void list_stack_init(list_stack_t *s, int max_count, uintptr_t max_addr)
 {
@@ -68,7 +46,7 @@ int list_stack_push(list_stack_t *s, double value)
 }
 
 // запоминает адрес, при заполнении массива самый старый адрес вытесняется
-static void remember_freed(list_stack_t *s, void *addr)
+void remember_freed(list_stack_t *s, void *addr)
 {
     if (s->freed_count == MAX_FREED)
     {
@@ -119,31 +97,4 @@ void list_stack_clear(list_stack_t *s)
 
     while (list_stack_pop(s, &value) == OK)
         ;
-}
-
-int main(void)
-{
-    list_stack_t s;
-    double value;
-
-    list_stack_init(&s, 5, UINTPTR_MAX);
-
-    for (int i = 1; i <= 5; i++)
-        list_stack_push(&s, i);
-    list_stack_print(&s);
-    printf("Переполнение при push: %d\n", list_stack_push(&s, 100) == ERR_OVERFLOW);
-
-    list_stack_pop(&s, &value);
-    list_stack_pop(&s, &value);
-    list_stack_print_freed(&s);
-
-    list_stack_push(&s, 10);
-    list_stack_push(&s, 20);
-    list_stack_print(&s);
-
-    list_stack_clear(&s);
-    printf("Пустой стек, pop: %d\n", list_stack_pop(&s, &value) == ERR_EMPTY);
-    list_stack_print_freed(&s);
-
-    return 0;
 }
