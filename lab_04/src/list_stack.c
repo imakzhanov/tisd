@@ -4,6 +4,7 @@
 #include "errors.h"
 #include "list_stack.h"
 
+
 void list_stack_init(list_stack_t *s, int max_count, uintptr_t max_addr)
 {
     s->top = NULL;
@@ -13,12 +14,12 @@ void list_stack_init(list_stack_t *s, int max_count, uintptr_t max_addr)
     s->freed_count = 0;
 }
 
-int list_stack_is_empty(const list_stack_t *s)
+int list_stack_is_empty(list_stack_t *s)
 {
     return s->top == NULL;
 }
 
-int list_stack_is_full(const list_stack_t *s)
+int list_stack_is_full(list_stack_t *s)
 {
     return s->count >= s->max_count;
 }
@@ -45,7 +46,7 @@ int list_stack_push(list_stack_t *s, double value)
     return OK;
 }
 
-// запоминает адрес, при заполнении массива самый старый адрес вытесняется
+// записывает адрес в массив освобожденных
 void remember_freed(list_stack_t *s, void *addr)
 {
     if (s->freed_count == MAX_FREED)
@@ -73,28 +74,29 @@ int list_stack_pop(list_stack_t *s, double *value)
 }
 
 // от вершины к основанию, без извлечения
-void list_stack_print(const list_stack_t *s)
+void list_stack_print(list_stack_t *s)
 {
     printf("Стек списком (сверху вниз), элементов: %d\n", s->count);
     if (list_stack_is_empty(s))
         printf("  пуст\n");
-    for (const node_t *cur = s->top; cur != NULL; cur = cur->next)
+    for (node_t *cur = s->top; cur != NULL; cur = cur->next)
         printf("  %g, адрес %p\n", cur->value, (void *)cur);
 }
 
-void list_stack_print_freed(const list_stack_t *s)
+void list_stack_print_freed(list_stack_t *s)
 {
-    printf("Освобожденные адреса (от старых к новым):\n");
+    printf("Освобожденные адреса (от старых к новым): \n");
     if (s->freed_count == 0)
-        printf("  нет\n");
+        printf("пусто\n");
     for (int i = 0; i < s->freed_count; i++)
-        printf("  %p\n", s->freed[i]);
+        printf("%d)     %p\n", i + 1, s->freed[i]);
 }
 
 void list_stack_clear(list_stack_t *s)
 {
     double value;
 
-    while (list_stack_pop(s, &value) == OK)
-        ;
+    int rc = list_stack_pop(s, &value);
+    while (rc == OK)
+        rc = list_stack_pop(s, &value);
 }

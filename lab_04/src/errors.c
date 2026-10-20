@@ -9,25 +9,25 @@ void print_error(int rc)
         case OK:
             break;
         case ERR_OVERFLOW:
-            printf("Ошибка: переполнение стека\n");
+            printf("Ошибка: Переполнение стека\n");
             break;
         case ERR_EMPTY:
-            printf("Ошибка: стек пуст\n");
+            printf("Ошибка: Стек пуст\n");
             break;
         case ERR_STACK_NUM:
-            printf("Ошибка: неверный номер стека\n");
+            printf("Ошибка: Неверный номер стека\n");
             break;
         case ERR_MEMORY:
-            printf("Ошибка: не удалось выделить память\n");
+            printf("Ошибка: Не удалось выделить память\n");
             break;
         case ERR_INPUT:
-            printf("Ошибка: неверный формат ввода\n");
+            printf("Ошибка: Неверный формат ввода\n");
             break;
         case ERR_RANGE:
-            printf("Ошибка: значение вне допустимого диапазона\n");
+            printf("Ошибка: Значение вне допустимого диапазона\n");
             break;
         case ERR_EOF:
-            printf("Ошибка: ввод завершен\n");
+            printf("Ошибка: Ввод завершен\n");
             break;
         default:
             printf("Неизвестная ошибка\n");
