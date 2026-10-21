@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "errors.h"
@@ -37,5 +38,17 @@ int read_double(char *text, double *value)
     printf("%s: ", text);
     int rc = finish_input(scanf("%lf", value));
 
+    return rc;
+}
+
+int read_addr(char *text, uintptr_t *value)
+{
+    unsigned long long addr;
+
+    printf("%s: ", text);
+    int rc = finish_input(scanf("%llx", &addr));
+
+    if (rc == OK)
+        *value = (uintptr_t)addr;
     return rc;
 }

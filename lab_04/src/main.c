@@ -8,7 +8,7 @@
 #include "list_stack.h"
 
 #define MIN_CHOISE 0
-#define MAX_CHOISE 9
+#define MAX_CHOISE 10
 
 void print_menu(void)
 {
@@ -24,6 +24,7 @@ void print_menu(void)
     printf("7 - Удалить элемент\n");
     printf("8 - Показать состояние (с адресами элементов)\n");
     printf("9 - Показать список освобожденных адресов\n");
+    printf("10 - Задать максимальный адрес элемента (адреса смотрите в пункте 8)\n");
     printf("0 - Выход\n");
     printf("----------------------------\n");
 }
@@ -69,6 +70,19 @@ int list_pop(list_stack_t *s)
 
     if (rc == OK)
         printf("Элемент %g УДАЛЕН\n", value);
+    return rc;
+}
+
+int list_set_max_addr(list_stack_t *s)
+{
+    uintptr_t addr;
+    int rc = read_addr("Введите максимальный адрес, в шестнадцатеричном виде", &addr);
+
+    if (rc == OK)
+    {
+        list_stack_set_max_addr(s, addr);
+        printf("Максимальный адрес элемента: %p\n", (void *)addr);
+    }
     return rc;
 }
 
@@ -127,6 +141,9 @@ int main(void)
                 break;
             case 9:
                 list_stack_print_freed(&list_stack);
+                break;
+            case 10:
+                rc = list_set_max_addr(&list_stack);
                 break;
             case 0:
                 run = 0;

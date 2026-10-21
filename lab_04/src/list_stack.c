@@ -14,6 +14,11 @@ void list_stack_init(list_stack_t *s, int max_count, uintptr_t max_addr)
     s->freed_count = 0;
 }
 
+void list_stack_set_max_addr(list_stack_t *s, uintptr_t max_addr)
+{
+    s->max_addr = max_addr;
+}
+
 int list_stack_is_empty(list_stack_t *s)
 {
     return s->top == NULL;
