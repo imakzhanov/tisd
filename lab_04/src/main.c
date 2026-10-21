@@ -66,10 +66,14 @@ int list_push(list_stack_t *s)
 int list_pop(list_stack_t *s)
 {
     double value;
+    void *addr = s->top; // адрес удаляемого узла, после pop вершина уже другая
     int rc = list_stack_pop(s, &value);
 
     if (rc == OK)
+    {
+        remember_freed(s, addr);
         printf("Элемент %g УДАЛЕН\n", value);
+    }
     return rc;
 }
 

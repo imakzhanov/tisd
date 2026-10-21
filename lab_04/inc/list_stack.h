@@ -32,6 +32,8 @@ int list_stack_is_full(list_stack_t *s);
 
 int list_stack_push(list_stack_t *s, double value);
 int list_stack_pop(list_stack_t *s, double *value);
+// запоминает адрес освобожденного узла, pop сам его не вызывает
+void remember_freed(list_stack_t *s, void *addr);
 
 // от вершины к основанию, без извлечения
 void list_stack_print(list_stack_t *s);

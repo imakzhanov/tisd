@@ -73,15 +73,14 @@ int list_stack_pop(list_stack_t *s, double *value)
     s->top = old->next;
     s->count--;
 
-    remember_freed(s, old);
     free(old);
     return OK;
 }
 
-// от вершины к основанию, без извлечения
+// вывод от вершины к основанию, без извлечения
 void list_stack_print(list_stack_t *s)
 {
-    printf("Стек списком (сверху вниз), элементов: %d\n", s->count);
+    printf("Стек списком (сверху вниз), элементов: %d, макс. адрес: %p\n", s->count, (void *)s->max_addr);
     if (list_stack_is_empty(s))
         printf("  пуст\n");
     for (node_t *cur = s->top; cur != NULL; cur = cur->next)
