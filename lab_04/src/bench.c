@@ -20,7 +20,7 @@ double now_us(void)
     return ts.tv_sec * 1e6 + ts.tv_nsec / 1e3;
 }
 
-// n добавлений, затем n удалений в первый стек массива
+// n добавлений, затем n удалений в первый стек массива (который в начале)
 int run_array(int n)
 {
     double value;

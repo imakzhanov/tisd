@@ -9,7 +9,7 @@
 typedef struct node
 {
     double value;
-    struct node *next;
+    struct node *prev;
 } node_t;
 
 // Структура стека
@@ -19,9 +19,14 @@ typedef struct
     int count;
     int max_count;
     uintptr_t max_addr; // адрес узла выше этого значения - переполнение
-    void *freed[MAX_FREED]; // запоминаю адреса освобожденных узлов
-    int freed_count;
 } list_stack_t;
+
+// адреса освобожденных узлов, хранятся последние MAX_FREED адресов
+typedef struct
+{
+    void *addr[MAX_FREED];
+    int count;
+} freed_t;
 
 void list_stack_init(list_stack_t *s, int max_count, uintptr_t max_addr);
 // ограничение действует только на новые push, уже лежащие элементы остаются
@@ -32,12 +37,14 @@ int list_stack_is_full(list_stack_t *s);
 
 int list_stack_push(list_stack_t *s, double value);
 int list_stack_pop(list_stack_t *s, double *value);
-// запоминает адрес освобожденного узла, pop сам его не вызывает
-void remember_freed(list_stack_t *s, void *addr);
 
 // от вершины к основанию, без извлечения
 void list_stack_print(list_stack_t *s);
-void list_stack_print_freed(list_stack_t *s);
 void list_stack_clear(list_stack_t *s);
+
+
+void freed_add(freed_t *f, void *addr);
+
+void freed_print(freed_t *f);
 
 #endif

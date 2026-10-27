@@ -21,6 +21,6 @@
 
 #define BATCH_SIZE 100
 
-#define BENCH_SIZES {100, 1000, 5000, 10000}
+#define BENCH_SIZES {100, 500, 1000, 2000, 5000, 10000}
 
 #endif

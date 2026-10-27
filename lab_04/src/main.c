@@ -14,10 +14,10 @@ void print_menu(void)
 {
     printf("\n----- Лабораторная 4 -----\n");
     printf("Стеки в массиве (два стека, один в начале, другой в конце массива, макс. элементов %d):\n", STACK_SIZE);
-    printf("1 - Добавить элемент в стек в начале массива\n");
-    printf("2 - Добавить элемент в стек в конце массива\n");
-    printf("3 - Удалить элемент из стека в начале массива\n");
-    printf("4 - Удалить элемент из стека в конце массива\n");
+    printf("1 - Добавить элемент в стек в НАЧАЛЕ массива\n");
+    printf("2 - Добавить элемент в стек в КОНЦЕ массива\n");
+    printf("3 - Удалить элемент из стека в НАЧАЛЕ массива\n");
+    printf("4 - Удалить элемент из стека в КОНЦЕ массива\n");
     printf("5 - Показать состояние стеков\n");
     printf("Стек списком (макс. элементов %d):\n", LIST_MAX_COUNT);
     printf("6 - Добавить элемент\n");
@@ -63,15 +63,15 @@ int list_push(list_stack_t *s)
     return rc;
 }
 
-int list_pop(list_stack_t *s)
+int list_pop(list_stack_t *s, freed_t *freed)
 {
     double value;
-    void *addr = s->top; // адрес удаляемого узла, после pop вершина уже другая
+    void *addr = s->top; // адрес удаляемого узла для запоминания
     int rc = list_stack_pop(s, &value);
 
     if (rc == OK)
     {
-        remember_freed(s, addr);
+        freed_add(freed, addr); // запоминаем освобожденный адрес 
         printf("Элемент %g УДАЛЕН\n", value);
     }
     return rc;
@@ -94,10 +94,14 @@ int main(void)
 {
     stack_t array_stack;
     list_stack_t list_stack;
+    freed_t freed;
+
     int choice, rc;
     int run = 1;
 
+    // инициализация
     stack_init(&array_stack);
+    freed.count = 0; // init freed
     list_stack_init(&list_stack, LIST_MAX_COUNT, UINTPTR_MAX);
 
     while (run)
@@ -138,13 +142,13 @@ int main(void)
                 rc = list_push(&list_stack);
                 break;
             case 7:
-                rc = list_pop(&list_stack);
+                rc = list_pop(&list_stack, &freed);
                 break;
             case 8:
                 list_stack_print(&list_stack);
                 break;
             case 9:
-                list_stack_print_freed(&list_stack);
+                freed_print(&freed);
                 break;
             case 10:
                 rc = list_set_max_addr(&list_stack);
