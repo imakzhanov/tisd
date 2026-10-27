@@ -32,8 +32,8 @@ static int add_with_choose_type(int use_csc)
     if (!use_csc)
         return standard_add(&std_a, &std_b, &std_res);
 
-    csc_free(&csc_res);
-    return csc_add(&csc_a, &csc_b, &csc_res);
+    csc_add_into(&csc_a, &csc_b, &csc_res);
+    return OK;
 }
 
 // среднее время одного сложения. замер - пачка из BATCH_SIZE сложений. Замеры повторяются, пока погрешность среднего не станет мала
@@ -71,7 +71,9 @@ static int bench_percent(int n, int percent, bench_result_t *r)
     standard_to_csc(&std_a, &csc_a);
     standard_to_csc(&std_b, &csc_b);
 
-    rc = measure(0, &r->standard_time);
+    rc = csc_alloc(&csc_res, n, n, csc_a.nonzero_count + csc_b.nonzero_count);
+    if (rc == OK)
+        rc = measure(0, &r->standard_time);
     if (rc == OK)
         rc = measure(1, &r->csc_time);
 

@@ -100,24 +100,18 @@ int standard_add(const standard_t *a, const standard_t *b, standard_t *res)
 }
 
 /**
- * @brief сложение матриц вида csc
+ * @brief сложение, сливает столбцы в уже выделенный результат 
  * 
- * @param a первое слагаемое
- * @param b второе слагаемое
- * @param res результат a + b, память выделяется внутри, освобождает вызывающий
- * @return int
+ * @param a 
+ * @param b 
+ * @param res 
  */
-int csc_add(const csc_t *a, const csc_t *b, csc_t *res)
+void csc_add_into(const csc_t *a, const csc_t *b, csc_t *res)
 {
-    if (a->rows != b->rows || a->cols != b->cols)
-        return ERR_SIZE;
-
     int actual_nonzero = 0;
-    int rc = csc_alloc(res, a->rows, a->cols, a->nonzero_count + b->nonzero_count);
-    if (rc != OK)
-        return rc; 
-
     int row_a, row_b;
+
+    res->ja[0] = 0;
     for (int j = 0; j < a->cols; j++)
     {
         // индекс для списка ia/a
@@ -172,7 +166,26 @@ int csc_add(const csc_t *a, const csc_t *b, csc_t *res)
         res->ja[j + 1] = actual_nonzero;
     }
     res->nonzero_count = actual_nonzero;
+}
 
+/**
+ * @brief сложение матриц вида csc
+ *
+ * @param a первое слагаемое
+ * @param b второе слагаемое
+ * @param res результат a + b, память выделяется внутри, освобождает вызывающий
+ * @return int
+ */
+int csc_add(const csc_t *a, const csc_t *b, csc_t *res)
+{
+    if (a->rows != b->rows || a->cols != b->cols)
+        return ERR_SIZE;
+
+    int rc = csc_alloc(res, a->rows, a->cols, a->nonzero_count + b->nonzero_count);
+    if (rc != OK)
+        return rc;
+
+    csc_add_into(a, b, res);
     return OK;
 }
 

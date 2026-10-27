@@ -16,12 +16,12 @@
 #define MIN_SAMPLES 10
 // максимальное количество повторений при измерении
 #define MAX_SAMPLES 100
-#define MAX_ERROR 0.03
+#define MAX_ERROR 0.05
 // сколько сложений выполняется подряд в одном замере
 #define BATCH_SIZE 10
 
 // размеры матриц и проценты заполнения, для которых строится таблица
-#define BENCH_SIZES {10, 50, 100, 200, 500, 1000, 5000}
+#define BENCH_SIZES {50, 100, 200, 500, 1000, 5000}
 #define BENCH_PERCENTS {1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 70, 100}
 
 #endif

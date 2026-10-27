@@ -36,6 +36,8 @@ size_t csc_memory(const csc_t *m);
 
 int standard_add(const standard_t *a, const standard_t *b, standard_t *res);
 
+void csc_add_into(const csc_t *a, const csc_t *b, csc_t *res);
+
 int csc_add(const csc_t *a, const csc_t *b, csc_t *res);
 
 int standard_to_csc(const standard_t *src, csc_t *res);
