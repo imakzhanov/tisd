@@ -112,7 +112,7 @@ static int run_array(const params_t *params, progress_fn progress, result_t *res
 int simulate(const params_t *params, queue_kind_t kind, unsigned seed,
              int show_addresses, progress_fn progress, result_t *result)
 {
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) // проверка отрезков
         if (!valid_range(params->arrival[i]) || params->arrival[i].max == 0
             || !valid_range(params->service[i]))
             return INPUT_ERROR;
