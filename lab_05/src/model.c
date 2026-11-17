@@ -11,9 +11,9 @@ const params_t default_params = {
     .service = {{0, 4}, {0, 1}}
 };
 
-static double random_time(range_t range)
+static double random_time(range_t range) // геренирует случайное равнораспределенное время из range
 {
-    double fraction = (rand() + 0.5) / (RAND_MAX + 1.0);
+    double fraction = (double)rand() / RAND_MAX;
     return range.min + (range.max - range.min) * fraction;
 }
 
@@ -26,9 +26,8 @@ static int valid_range(range_t range)
 static int run(const params_t *params, arr_queue_t *array, list_queue_t *list,
                progress_fn progress, result_t *result)
 {
-    double arrival[2] = {
-        random_time(params->arrival[0]), random_time(params->arrival[1])
-    };
+    // генерация начальных приходов
+    double arrival[2] = { random_time(params->arrival[0]), random_time(params->arrival[1]) };
     double finish = INFINITY;
     int active = -1;
     int rc = OK;
@@ -46,16 +45,17 @@ static int run(const params_t *params, arr_queue_t *array, list_queue_t *list,
 
         for (int i = 0; i < 2; i++)
         {
-            if (arrival[i] != now)
-                continue;
-            rc = array ? arr_push(&array[i], now) : list_push(&list[i], now);
-            if (rc != OK)
-                return rc;
-            result->queue[i].arrived++;
-            result->queue[i].size++;
-            arrival[i] = now + random_time(params->arrival[i]);
-            if (!isfinite(arrival[i]) || arrival[i] <= now)
-                return TIME_ERROR;
+            while (arrival[i] == now)
+            {
+                rc = array ? arr_push(&array[i], now) : list_push(&list[i], now);
+                if (rc != OK)
+                    return rc;
+                result->queue[i].arrived++;
+                result->queue[i].size++;
+                arrival[i] = now + random_time(params->arrival[i]); // генерируем время следующего прихода
+                if (!isfinite(arrival[i]) || arrival[i] < now)
+                    return TIME_ERROR;
+            }
         }
 
         if (list)
@@ -76,7 +76,7 @@ static int run(const params_t *params, arr_queue_t *array, list_queue_t *list,
 
         if (active < 0 && result->queue[0].departed < TARGET)
         {
-            // Приоритет первого типа учитывается только при выборе новой заявки.
+            // Приоритет заявки первого типа учитывается при выборе новой заявки
             for (int i = 0; i < 2; i++)
             {
                 queue_stats_t *stats = &result->queue[i];
@@ -91,7 +91,7 @@ static int run(const params_t *params, arr_queue_t *array, list_queue_t *list,
                 stats->started++;
                 stats->wait += now - entered;
                 active = i;
-                finish = now + random_time(params->service[i]);
+                finish = now + random_time(params->service[i]); // генерация времени выполнения заявки аппаратом
                 if (!isfinite(finish))
                     return TIME_ERROR;
                 break;
@@ -101,12 +101,6 @@ static int run(const params_t *params, arr_queue_t *array, list_queue_t *list,
             progress(result);
     }
     return OK;
-}
-
-static int run_array(const params_t *params, progress_fn progress, result_t *result)
-{
-    arr_queue_t queues[2] = {0};
-    return run(params, queues, NULL, progress, result);
 }
 
 int simulate(const params_t *params, queue_kind_t kind, unsigned seed,
@@ -119,9 +113,13 @@ int simulate(const params_t *params, queue_kind_t kind, unsigned seed,
 
     *result = (result_t){0};
     srand(seed);
-    if (kind == QUEUE_ARRAY)
-        return run_array(params, progress, result);
+    if (kind == QUEUE_ARRAY) // очереди на массиве
+    {
+        arr_queue_t queues[2] = {0};
+        return run(params, queues, NULL, progress, result);
+    }
 
+    // очереди на списке
     list_queue_t queues[2] = {0};
     for (int i = 0; i < 2; i++)
         queues[i].show_addresses = show_addresses;
@@ -129,10 +127,8 @@ int simulate(const params_t *params, queue_kind_t kind, unsigned seed,
     int rc = run(params, NULL, queues, progress, result);
     for (int i = 0; i < 2; i++)
     {
-        double unused;
         queues[i].show_addresses = 0;
-        while (queues[i].size)
-            list_pop(&queues[i], &unused);
+        list_clear(&queues[i]);
     }
     return rc;
 }

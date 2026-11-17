@@ -21,5 +21,6 @@ typedef struct
 
 int list_push(list_queue_t *queue, double value);
 int list_pop(list_queue_t *queue, double *value);
+void list_clear(list_queue_t *queue);
 
 #endif

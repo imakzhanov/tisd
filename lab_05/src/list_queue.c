@@ -45,3 +45,10 @@ int list_pop(list_queue_t *queue, double *value)
 
     return OK;
 }
+
+void list_clear(list_queue_t *queue)
+{
+    double unused;
+    while (queue->size)
+        list_pop(queue, &unused);
+}

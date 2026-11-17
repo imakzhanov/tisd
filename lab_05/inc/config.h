@@ -4,7 +4,7 @@
 #define QUEUE_CAPACITY 4096
 #define TARGET 1000
 #define REPORT_STEP 100
-#define MODEL_SEED 42u
 #define BENCH_RUNS 100
+#define QUEUE_BENCH_RUNS 10000
 
 #endif

@@ -28,6 +28,16 @@ int read_choice(void)
     return choice;
 }
 
+int read_value(double *value)
+{
+    char line[128], extra;
+    printf("Значение: ");
+    if (read_line(line, sizeof(line)) != 1
+        || sscanf(line, "%lf %c", value, &extra) != 1 || !isfinite(*value))
+        return INPUT_ERROR;
+    return OK;
+}
+
 static int read_range(const char *name, int type, range_t *range, int is_arrival)
 {
     char line[128], extra;
