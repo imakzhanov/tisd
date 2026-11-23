@@ -1,0 +1,18 @@
+#ifndef ERRORS_H
+#define ERRORS_H
+
+enum
+{
+    OK,
+    MEMORY_ERROR,
+    EMPTY_TREE,
+    INPUT_ERROR,
+    FILE_ERROR,
+    EMPTY_FILE,
+    WORD_TOO_LONG,
+    NOT_FOUND,
+    TIME_ERROR,
+    BENCH_ERROR
+};
+
+#endif
