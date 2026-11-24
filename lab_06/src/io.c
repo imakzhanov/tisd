@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-// Слова состоят из латинских или русских букв в UTF-8.
+// Возвращает длину русской или латинской буквы в байтах UTF-8 либо ноль.
 static size_t letter_size(const unsigned char *text)
 {
     unsigned char first = text[0];
@@ -15,24 +15,7 @@ static size_t letter_size(const unsigned char *text)
     return 0;
 }
 
-static void lower_letter(unsigned char *text)
-{
-    if (text[0] >= 'A' && text[0] <= 'Z')
-        text[0] += 'a' - 'A';
-    else if (text[0] == 0xD0 && text[1] == 0x81)
-    {
-        text[0] = 0xD1;
-        text[1] = 0x91;
-    }
-    else if (text[0] == 0xD0 && text[1] >= 0x90 && text[1] <= 0x9F)
-        text[1] += 0x20;
-    else if (text[0] == 0xD0 && text[1] >= 0xA0 && text[1] <= 0xAF)
-    {
-        text[0] = 0xD1;
-        text[1] -= 0x20;
-    }
-}
-
+// Читает строку и дочитывает её остаток при превышении длины.
 static int read_line(char *line, int capacity)
 {
     if (!fgets(line, capacity, stdin))
@@ -59,6 +42,7 @@ static int read_line(char *line, int capacity)
     return 1;
 }
 
+// Читает один символ команды меню и проверяет формат ввода.
 int read_choice(void)
 {
     char line[32], choice, extra;
@@ -70,6 +54,7 @@ int read_choice(void)
     return choice;
 }
 
+// Запрашивает непустой путь к входному файлу.
 int read_file_path(char path[PATH_CAPACITY])
 {
     printf("Путь к текстовому файлу UTF-8: ");
@@ -78,28 +63,29 @@ int read_file_path(char path[PATH_CAPACITY])
     return OK;
 }
 
+// Читает и проверяет слово или одну букву.
 int read_key(char word[WORD_CAPACITY], int single_letter)
 {
     if (single_letter)
-        printf("Буква (русская или латинская): ");
+        printf("Буква: ");
     else
         printf("Слово (русские и латинские буквы, до %d байт): ", WORD_CAPACITY - 1);
 
     if (read_line(word, WORD_CAPACITY) != 1 || !word[0])
         return INPUT_ERROR;
 
-    unsigned char *text = (unsigned char *)word;
+    const unsigned char *text = (const unsigned char *)word;
     while (*text)
     {
         size_t length = letter_size(text);
         if (!length || (single_letter && text[length]))
             return INPUT_ERROR;
-        lower_letter(text);
         text += length;
     }
     return OK;
 }
 
+// Читает следующее слово из текстового файла UTF-8.
 int file_read_word(FILE *file, char word[WORD_CAPACITY], int *has_word)
 {
     size_t used = 0;
@@ -128,7 +114,6 @@ int file_read_word(FILE *file, char word[WORD_CAPACITY], int *has_word)
         if (used + length >= WORD_CAPACITY)
             return WORD_TOO_LONG;
 
-        lower_letter(text);
         memcpy(word + used, text, length);
         used += length;
     }
@@ -140,6 +125,7 @@ int file_read_word(FILE *file, char word[WORD_CAPACITY], int *has_word)
     return OK;
 }
 
+// Строит дерево из файла и заменяет текущее только при успешной загрузке.
 int load_tree(const char *path, node_t **root)
 {
     FILE *file = fopen(path, "rb");
@@ -172,6 +158,7 @@ int load_tree(const char *path, node_t **root)
     return OK;
 }
 
+// Последовательно читает файл и считает слова на заданную букву.
 int file_count_prefix(FILE *file, const char *letter, size_t *count, size_t *comparisons)
 {
     char word[WORD_CAPACITY];
@@ -189,6 +176,7 @@ int file_count_prefix(FILE *file, const char *letter, size_t *count, size_t *com
     return rc;
 }
 
+// выводит ветку рекурсивно
 static void print_branch(const node_t *root, const char *letter, size_t length,
                          size_t depth, const char *side)
 {
@@ -196,22 +184,74 @@ static void print_branch(const node_t *root, const char *letter, size_t length,
         return;
 
     for (size_t i = 0; i < depth; ++i)
-        printf("    ");
-    printf("%s", side);
+        fputs("  ", stdout);
+    printf("%s: ", side);
     if (letter && strncmp(root->word, letter, length) == 0)
         printf("\033[1;32m%s\033[0m\n", root->word);
     else
         puts(root->word);
 
-    print_branch(root->left, letter, length, depth + 1, "|-- Л: ");
-    print_branch(root->right, letter, length, depth + 1, "|-- П: ");
+    print_branch(root->left, letter, length, depth + 1, "L");
+    print_branch(root->right, letter, length, depth + 1, "R");
 }
 
+// Печатает дерево в консоли и подсвечивает слова на заданную букву. рекурсивно вызывает print_branch
 void print_tree(const node_t *root, const char *letter)
 {
-    print_branch(root, letter, letter ? strlen(letter) : 0, 0, "Корень: ");
+    print_branch(root, letter, letter ? strlen(letter) : 0, 0, "root");
 }
 
+// Рекурсивно записывает узел, его потомков и подсветку в DOT.
+static int write_dot_branch(FILE *file, const node_t *node, size_t id, size_t *next_id,
+                            const char *letter, size_t length)
+{
+    const char *highlight = letter && strncmp(node->word, letter, length) == 0
+                            ? ", style=filled, fillcolor=palegreen" : "";
+    if (fprintf(file, "    n%zu [label=\"%s\"%s];\n", id, node->word, highlight) < 0)
+        return FILE_ERROR;
+
+    const node_t *children[] = {node->left, node->right};
+    const char *labels[] = {"L", "R"};
+    for (size_t i = 0; i < sizeof(children) / sizeof(children[0]); ++i)
+    {
+        if (!children[i])
+            continue;
+
+        size_t child_id = (*next_id)++;
+        if (fprintf(file, "    n%zu -> n%zu [label=\"%s\"];\n",
+                    id, child_id, labels[i]) < 0)
+            return FILE_ERROR;
+
+        int rc = write_dot_branch(file, children[i], child_id, next_id, letter, length);
+        if (rc != OK)
+            return rc;
+    }
+    return OK;
+}
+
+// Записывает узлы и связи дерева в файл формата DOT.
+int export_tree_dot(const node_t *root, const char *path, const char *letter)
+{
+    if (!root)
+        return EMPTY_TREE;
+
+    FILE *file = fopen(path, "w");
+    if (!file)
+        return FILE_ERROR;
+
+    size_t next_id = 1;
+    int rc = FILE_ERROR;
+    if (fputs("digraph Tree {\n    graph [charset=\"UTF-8\", ordering=out];\n    node [shape=box, fontname=\"sans-serif\"];\n", file) != EOF)
+        rc = write_dot_branch(file, root, 0, &next_id, letter, letter ? strlen(letter) : 0);
+    if (rc == OK && fputs("}\n", file) == EOF)
+        rc = FILE_ERROR;
+    if (fclose(file) == EOF)
+        rc = FILE_ERROR;
+
+    return rc;
+}
+
+// Выводит сообщение по коду ошибки в стандартный поток ошибок.
 void print_error(int rc)
 {
     const char *messages[] = {
@@ -224,7 +264,9 @@ void print_error(int rc)
         "Слишком длинное слово.",
         "Слово не найдено.",
         "Не удалось измерить время.",
-        "Результаты сравниваемых алгоритмов не совпали."
+        "Результаты сравниваемых алгоритмов не совпали.",
+        "Команда dot не найдена. Для создания PNG нужен Graphviz.",
+        "Graphviz не смог создать изображение PNG."
     };
     fprintf(stderr, "%s\n", messages[rc]);
 }

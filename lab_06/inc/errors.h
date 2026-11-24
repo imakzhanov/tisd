@@ -12,7 +12,9 @@ enum
     WORD_TOO_LONG,
     NOT_FOUND,
     TIME_ERROR,
-    BENCH_ERROR
+    BENCH_ERROR,
+    GRAPHVIZ_MISSING,
+    GRAPHVIZ_ERROR
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Вставляет слово, направляя одинаковые ключи вправо.
 int tree_insert(node_t **root, const char *word)
 {
     size_t length = strlen(word);
@@ -23,6 +24,12 @@ int tree_insert(node_t **root, const char *word)
     node_t *node = malloc(sizeof(*node));
     if (!node)
         return MEMORY_ERROR;
+    node->word = malloc(length + 1);
+    if (!node->word)
+    {
+        free(node);
+        return MEMORY_ERROR;
+    }
     memcpy(node->word, word, length + 1);
     node->left = NULL;
     node->right = NULL;
@@ -30,6 +37,7 @@ int tree_insert(node_t **root, const char *word)
     return OK;
 }
 
+// Ищет точное слово и при необходимости считает сравнения.
 const node_t *tree_find(const node_t *root, const char *word, size_t *comparisons)
 {
     while (root)
@@ -44,6 +52,7 @@ const node_t *tree_find(const node_t *root, const char *word, size_t *comparison
     return NULL;
 }
 
+// Удаляет одно вхождение слова и восстанавливает связи дерева.
 int tree_remove(node_t **root, const char *word)
 {
     if (!*root)
@@ -77,11 +86,13 @@ int tree_remove(node_t **root, const char *word)
         successor->right = removed->right;
         *link = successor;
     }
+    free(removed->word);
     free(removed);
     return OK;
 }
 
-void tree_traverse(const node_t *root, traversal_t order,
+// Обходит дерево в заданном порядке и вызывает обработчик для каждого слова.
+void tree_traverse(const node_t *root, order_t order,
                    void (*visit)(const char *, void *), void *context)
 {
     if (!root)
@@ -96,6 +107,7 @@ void tree_traverse(const node_t *root, traversal_t order,
         visit(root->word, context);
 }
 
+// Считает совпадения в поддереве и при необходимости учитывает сравнения.
 static size_t count_prefix(const node_t *root, const char *letter, size_t length,
                            size_t *comparisons)
 {
@@ -115,11 +127,13 @@ static size_t count_prefix(const node_t *root, const char *letter, size_t length
     return count;
 }
 
+// Считает узлы со словами на заданную букву, пропуская неподходящие ветви.
 size_t tree_count_prefix(const node_t *root, const char *letter, size_t *comparisons)
 {
     return count_prefix(root, letter, strlen(letter), comparisons);
 }
 
+// Вычисляет число узлов, уровней и узлов с двумя потомками.
 tree_stats_t tree_stats(const node_t *root)
 {
     if (!root)
@@ -133,6 +147,7 @@ tree_stats_t tree_stats(const node_t *root)
     };
 }
 
+// Освобождает все узлы и обнуляет корень.
 void tree_clear(node_t **root)
 {
     node_t *node = *root;
@@ -149,6 +164,7 @@ void tree_clear(node_t **root)
         else
         {
             node_t *next = node->right;
+            free(node->word);
             free(node);
             node = next;
         }

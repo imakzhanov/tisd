@@ -1,19 +1,24 @@
 #include "io.h"
 
+#include <string.h>
+
+// Печатает меню команд.
 static void print_menu(void)
 {
-    printf("\n");
-    printf("1. Загрузить слова из файла (заменить дерево)\n");
+    printf("\n------------------------------------------\n");
+    printf("1. Загрузить слова из файла\n");
     printf("2. Показать дерево\n");
-    printf("3. Посчитать и выделить слова на заданную букву\n");
+    printf("3. Посчитать и выделить слова на заданную букву\n\n");
     printf("4. Добавить слово\n");
     printf("5. Удалить одно вхождение слова\n");
-    printf("6. Найти точное слово\n");
+    printf("6. Найти точное слово\n\n");
     printf("7. Показать обходы дерева\n");
     printf("8. Очистить дерево\n");
+    printf("9. Сохранить PNG изображение дерева\n\n");
     printf("0. Выход\n> ");
 }
 
+// Загружает дерево из указанного файла и выводит его размер и высоту.
 static int load_words(node_t **root)
 {
     char path[PATH_CAPACITY];
@@ -28,15 +33,17 @@ static int load_words(node_t **root)
     return rc;
 }
 
-static int find_by_letter(const node_t *root)
+// Запоминает выбранную букву, считает совпадения и показывает их в дереве.
+static int find_by_letter(const node_t *root, char letter[WORD_CAPACITY])
 {
     if (!root)
         return EMPTY_TREE;
 
-    char letter[WORD_CAPACITY];
-    int rc = read_key(letter, 1);
+    char input[WORD_CAPACITY];
+    int rc = read_key(input, 1);
     if (rc == OK)
     {
+        strcpy(letter, input);
         size_t count = tree_count_prefix(root, letter, NULL);
         printf("Узлов со словами на «%s»: %zu.\n", letter, count);
         print_tree(root, letter);
@@ -44,6 +51,7 @@ static int find_by_letter(const node_t *root)
     return rc;
 }
 
+// Добавляет, удаляет или ищет слово по команде меню.
 static int change_word(node_t **root, int choice)
 {
     if (!*root && choice != '4')
@@ -76,6 +84,7 @@ static int change_word(node_t **root, int choice)
     return rc;
 }
 
+// Печатает очередное слово обхода, разделяя слова пробелами.
 static void print_word(const char *word, void *context)
 {
     int *first = context;
@@ -85,12 +94,13 @@ static void print_word(const char *word, void *context)
     *first = 0;
 }
 
+// Печатает слова в префиксном, инфиксном и постфиксном порядке.
 static int print_traversals(const node_t *root)
 {
     if (!root)
         return EMPTY_TREE;
 
-    const traversal_t orders[] = {PREORDER, INORDER, POSTORDER};
+    const order_t orders[] = {PREORDER, INORDER, POSTORDER};
     const char *labels[] = {"Префиксный", "Инфиксный", "Постфиксный"};
     for (size_t i = 0; i < sizeof(orders) / sizeof(orders[0]); ++i)
     {
@@ -105,6 +115,7 @@ static int print_traversals(const node_t *root)
 int main(void)
 {
     node_t *root = NULL;
+    char letter[WORD_CAPACITY] = "";
     for (;;)
     {
         print_menu();
@@ -117,6 +128,8 @@ int main(void)
         {
             case '1':
                 rc = load_words(&root);
+                if (rc == OK)
+                    letter[0] = '\0';
                 break;
             case '2':
                 if (root)
@@ -125,7 +138,7 @@ int main(void)
                     rc = EMPTY_TREE;
                 break;
             case '3':
-                rc = find_by_letter(root);
+                rc = find_by_letter(root, letter);
                 break;
             case '4':
             case '5':
@@ -137,7 +150,15 @@ int main(void)
                 break;
             case '8':
                 tree_clear(&root);
+                letter[0] = '\0';
                 puts("Дерево очищено.");
+                break;
+            case '9':
+                rc = export_tree_png(root, letter[0] ? letter : NULL);
+                if (rc == OK)
+                    puts("Изображение дерева сохранено в tree.png.");
+                else if (rc == GRAPHVIZ_MISSING || rc == GRAPHVIZ_ERROR)
+                    puts("Дерево сохранено в tree.dot.");
                 break;
             default:
                 rc = INPUT_ERROR;

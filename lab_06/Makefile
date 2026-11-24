@@ -8,7 +8,7 @@ CFLAGS = -std=c99 -Wall -Werror -Wpedantic -Wextra -Wvla -O0
 CPPFLAGS = -Iinc
 
 COMMON_OBJ = build/tree.o build/io.o
-APP_OBJ = build/main.o $(COMMON_OBJ)
+APP_OBJ = build/main.o build/graph.o $(COMMON_OBJ)
 BENCH_OBJ = build/bench.o $(COMMON_OBJ)
 
 all: app
@@ -30,7 +30,8 @@ build/%.o: src/%.c
 clean:
 	rm -rf build
 	rm -f app.exe bench.exe
-
+	rm -f *.dot
+	
 -include $(wildcard build/*.d)
 
 .PHONY: all app bench clean

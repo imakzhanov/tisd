@@ -8,7 +8,7 @@
 
 typedef struct node
 {
-    char word[WORD_CAPACITY];
+    char *word;
     struct node *left;
     struct node *right;
 } node_t;
@@ -18,7 +18,7 @@ typedef enum
     PREORDER,
     INORDER,
     POSTORDER
-} traversal_t;
+} order_t;
 
 typedef struct
 {
@@ -30,7 +30,7 @@ typedef struct
 int tree_insert(node_t **root, const char *word);
 int tree_remove(node_t **root, const char *word);
 const node_t *tree_find(const node_t *root, const char *word, size_t *comparisons);
-void tree_traverse(const node_t *root, traversal_t order,
+void tree_traverse(const node_t *root, order_t order,
                    void (*visit)(const char *, void *), void *context);
 size_t tree_count_prefix(const node_t *root, const char *letter, size_t *comparisons);
 tree_stats_t tree_stats(const node_t *root);
